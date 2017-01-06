@@ -33,3 +33,17 @@ C:\Users\Administrator\Documents\GitHub\UpperCareer\RTCareerAsk.DAL\bin\Debug\Le
 C:\Users\Administrator\Documents\GitHub\UpperCareer\RTCareerAsk.DAL\bin\Debug\LeanCloud.NetFx45.xml
 C:\Users\Administrator\Documents\GitHub\UpperCareer\RTCareerAsk.DAL\obj\Debug\RTCareerAsk.DAL.dll
 C:\Users\Administrator\Documents\GitHub\UpperCareer\RTCareerAsk.DAL\obj\Debug\RTCareerAsk.DAL.pdb
+D:\工作\UpperCareer\UpperCareer\RTCareerAsk.DAL\bin\Debug\RTCareerAsk.DAL.dll
+D:\工作\UpperCareer\UpperCareer\RTCareerAsk.DAL\bin\Debug\RTCareerAsk.DAL.pdb
+D:\工作\UpperCareer\UpperCareer\RTCareerAsk.DAL\bin\Debug\AVOSCloud.NetFx45.dll
+D:\工作\UpperCareer\UpperCareer\RTCareerAsk.DAL\bin\Debug\LeanCloud.dll
+D:\工作\UpperCareer\UpperCareer\RTCareerAsk.DAL\bin\Debug\LeanCloud.NetFx45.dll
+D:\工作\UpperCareer\UpperCareer\RTCareerAsk.DAL\bin\Debug\websocket-sharp.dll
+D:\工作\UpperCareer\UpperCareer\RTCareerAsk.DAL\bin\Debug\AVOSCloud.NetFx45.xml
+D:\工作\UpperCareer\UpperCareer\RTCareerAsk.DAL\bin\Debug\LeanCloud.pdb
+D:\工作\UpperCareer\UpperCareer\RTCareerAsk.DAL\bin\Debug\LeanCloud.xml
+D:\工作\UpperCareer\UpperCareer\RTCareerAsk.DAL\bin\Debug\LeanCloud.NetFx45.pdb
+D:\工作\UpperCareer\UpperCareer\RTCareerAsk.DAL\bin\Debug\LeanCloud.NetFx45.xml
+D:\工作\UpperCareer\UpperCareer\RTCareerAsk.DAL\obj\Debug\RTCareerAsk.DAL.csprojResolveAssemblyReference.cache
+D:\工作\UpperCareer\UpperCareer\RTCareerAsk.DAL\obj\Debug\RTCareerAsk.DAL.dll
+D:\工作\UpperCareer\UpperCareer\RTCareerAsk.DAL\obj\Debug\RTCareerAsk.DAL.pdb

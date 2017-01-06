@@ -35,10 +35,10 @@
       <HintPath>..\packages\LeanCloud.1.1.0.1\lib\net45\AVOSCloud.NetFx45.dll</HintPath>
     </Reference>
     <Reference Include="LeanCloud">
-      <HintPath>..\..\..\..\Desktop\LeanCloud patch\LeanCloud.dll</HintPath>
+      <HintPath>C:\Users\Administrator\Desktop\LeanCloud patch(1)\LeanCloud patch\LeanCloud.dll</HintPath>
     </Reference>
     <Reference Include="LeanCloud.NetFx45">
-      <HintPath>..\..\..\..\Desktop\LeanCloud patch\LeanCloud.NetFx45.dll</HintPath>
+      <HintPath>C:\Users\Administrator\Desktop\LeanCloud patch(1)\LeanCloud patch\LeanCloud.NetFx45.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
