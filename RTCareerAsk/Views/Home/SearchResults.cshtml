@@ -1,0 +1,18 @@
+﻿@model RTCareerAsk.Models.SearchResultModel
+
+@Html.HiddenFor(model => model.Keyword)
+<div style="max-width: 700px" class="centered clear-fix">
+    <h4>为您找到 @Model.ResultCount 条结果</h4>
+    <div id="divQuestionResults">
+        <h4>相关问题共 @Model.QuestionResults.Count 条</h4>
+        <div>
+            @Html.Partial("_QuestionList", Model.QuestionResults)
+        </div>
+    </div>
+    <div id="divUserResults">
+        <h4>相关用户共 @Model.UserResults.Count 条</h4>
+        <div>
+            @Html.Partial("_UserTagList", Model.UserResults)
+        </div>
+    </div>
+</div>

@@ -23,14 +23,7 @@ namespace RTCareerAsk.PLtoDA
         {
             return await LCDal.LoadArticleList(pageIndex).ContinueWith(t =>
                 {
-                    List<ArticleInfoModel> atcls = new List<ArticleInfoModel>();
-
-                    foreach (ArticleInfo atcl in t.Result)
-                    {
-                        atcls.Add(new ArticleInfoModel(atcl));
-                    }
-
-                    return atcls;
+                    return t.Result != null && t.Result.Count() > 0 ? t.Result.Select(x => new ArticleInfoModel(x)).ToList() : new List<ArticleInfoModel>();
                 });
         }
 
@@ -59,14 +52,7 @@ namespace RTCareerAsk.PLtoDA
         {
             return await LCDal.LoadArticleComments(atclId, pageIndex).ContinueWith(t =>
                 {
-                    List<ArticleCommentModel> acmts = new List<ArticleCommentModel>();
-
-                    foreach (ArticleComment acmt in t.Result)
-                    {
-                        acmts.Add(new ArticleCommentModel(acmt));
-                    }
-
-                    return acmts;
+                    return t.Result != null && t.Result.Count() > 0 ? t.Result.Select(x => new ArticleCommentModel(x)).ToList() : new List<ArticleCommentModel>();
                 });
         }
 

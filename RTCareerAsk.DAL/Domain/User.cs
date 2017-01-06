@@ -14,11 +14,11 @@ namespace RTCareerAsk.DAL.Domain
             Roles = new List<Role>();
         }
 
-        public User(AVUser uo)
+        public User(AVUser u)
         {
             Roles = new List<Role>();
 
-            GenerateUserObject(uo);
+            GenerateUserObject(u);
         }
 
         public string ObjectID { get; set; }
@@ -47,21 +47,21 @@ namespace RTCareerAsk.DAL.Domain
 
         public List<Role> Roles { get; set; }
 
-        private void GenerateUserObject(AVUser uo)
+        private void GenerateUserObject(AVUser u)
         {
-            if (uo != null)
+            if (u != null)
             {
-                ObjectID = uo.ObjectId;
-                Name = uo.ContainsKey("nickname") ? uo.Get<string>("nickname") : null;
-                Title = uo.ContainsKey("title") ? uo.Get<string>("title") : null;
-                Gender = uo.ContainsKey("gender") ? uo.Get<int>("gender") : 0;
-                Portrait = uo.ContainsKey("portrait") ? uo.Get<string>("portrait") : null;
-                Email = uo.Email;
-                Company = uo.ContainsKey("company") ? uo.Get<string>("company") : null;
-                FieldIndex = uo.ContainsKey("fieldIndex") ? uo.Get<int>("fieldIndex") : 0;
-                EmailVerified = uo.ContainsKey("emailVerified") ? uo.Get<bool>("emailVerified") : false;
-                MobileVerified = uo.MobilePhoneVerified;
-                DateCreate = Convert.ToDateTime(uo.CreatedAt);
+                ObjectID = u.ObjectId;
+                Name = u.ContainsKey("nickname") ? u.Get<string>("nickname") : null;
+                Title = u.ContainsKey("title") ? u.Get<string>("title") : null;
+                Gender = u.ContainsKey("gender") ? u.Get<int>("gender") : 0;
+                Portrait = u.ContainsKey("portrait") ? u.Get<string>("portrait") : null;
+                Email = u.Email;
+                Company = u.ContainsKey("company") ? u.Get<string>("company") : null;
+                FieldIndex = u.ContainsKey("fieldIndex") ? u.Get<int>("fieldIndex") : 0;
+                EmailVerified = u.ContainsKey("emailVerified") ? u.Get<bool>("emailVerified") : false;
+                MobileVerified = u.MobilePhoneVerified;
+                DateCreate = Convert.ToDateTime(u.CreatedAt);
             }
         }
 
@@ -123,6 +123,59 @@ namespace RTCareerAsk.DAL.Domain
         }
     }
 
+    public class UserTag
+    {
+        public UserTag() { }
+
+        public UserTag(AVUser u)
+        {
+            GenerateUserTagObject(u);
+        }
+
+        public string ObjectID { get; set; }
+
+        public string Name { get; set; }
+
+        public int Gender { get; set; }
+
+        public string Portrait { get; set; }
+
+        public string Title { get; set; }
+
+        public string Company { get; set; }
+
+        public bool? HasFollowed { get; set; }
+
+        public int FollowerCount { get; set; }
+
+        public int AnswerCount { get; set; }
+
+        private void GenerateUserTagObject(AVUser u)
+        {
+            if (u == null)
+            {
+                throw new ArgumentNullException("未能获取用户信息");
+            }
+
+            ObjectID = u.ObjectId;
+            Name = u.ContainsKey("nickname") ? u.Get<string>("nickname") : null;
+            Gender = u.ContainsKey("gender") ? u.Get<int>("gender") : 0;
+            Portrait = u.ContainsKey("portrait") ? u.Get<string>("portrait") : null;
+            Title = u.ContainsKey("title") ? u.Get<string>("title") : null;
+            Company = u.ContainsKey("company") ? u.Get<string>("company") : null;
+
+        }
+
+        public UserTag SetFollowerAndAnswerCount(bool? hasFollowed, int followerCnt, int answerCnt)
+        {
+            HasFollowed = hasFollowed;
+            FollowerCount = followerCnt;
+            AnswerCount = answerCnt;
+
+            return this;
+        }
+    }
+
     public class UserDetail
     {
         public UserDetail() { }
@@ -147,25 +200,21 @@ namespace RTCareerAsk.DAL.Domain
 
         public int FolloweeCount { get; set; }
 
-        private void CreateNewUserDetailObject(AVUser uo)
+        private void CreateNewUserDetailObject(AVUser u)
         {
-            ForUser = new User(uo);
+            ForUser = new User(u);
         }
 
-        private void GenerateUserDetailObject(AVObject udo)
+        private void GenerateUserDetailObject(AVObject ud)
         {
-            if (udo.ClassName != "UserDetail")
+            if (ud.ClassName != "UserDetail")
             {
                 throw new InvalidOperationException("获取的对象不是用户信息类object。");
             }
-            else if (!udo.ContainsKey("forUser") || udo.Get<AVUser>("forUser") == null)
-            {
-                throw new NullReferenceException("未能获取用户基本信息。");
-            }
 
-            ObjectId = udo.ObjectId;
-            ForUser = new User(udo.Get<AVUser>("forUser"));
-            SelfDescription = udo.Get<string>("selfDescription");
+            ObjectId = ud.ObjectId;
+            ForUser = new User(ud.Get<AVUser>("forUser"));
+            SelfDescription = ud.Get<string>("selfDescription");
         }
 
         public UserDetail SetFollowCounts(int follower, int followee)
@@ -197,6 +246,5 @@ namespace RTCareerAsk.DAL.Domain
 
             return udo;
         }
-
     }
 }

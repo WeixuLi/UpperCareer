@@ -17,8 +17,9 @@
             DisplaySuccessInfo('内容更新成功！');
             triggerTarget.trigger('updateSuccess');
         },
-        error: function () {
-            DisplayErrorInfo('内容更新出现问题……');
+        error: function (xhr) {
+            var json = $.parseJSON(xhr.responseText);
+            DisplayErrorInfo(json.errorMessage);
             triggerTarget.trigger('updateError');
         }
     });
@@ -144,15 +145,7 @@ $(document).ready(function () {
         $(this).removeClass('not-active').text('保存修改');
     });
 
-    $(document).on('click', 'a#btnDel', function (e) {
-        e.preventDefault();
-
-        var data = $(this).data();
-
-        data.url = deleteAnswerOrComment;
-
-        RequestForDelete(data);
-    })
+    $('a#btnDel').upperconfirmdialog(deleteAnswerOrComment);
 
     $(document).on('click', 'a[id^="btnCmtRply"]', function (e) {
         e.preventDefault();
@@ -193,39 +186,6 @@ $(document).ready(function () {
         }
     });
 
-    $(document).on('click', 'div[id^="divAnsVote"] a', function (e) {
-        e.preventDefault();
-        var $this = $(this),
-            wrap = $this.closest('div[id^="divAnsVote"]'),
-            isLike = $this.html() == "赞",
-            isUpdate = !$this.hasClass('new'),
-            data = new Object(),
-            valueChange = (isUpdate ? 2 : 1) * (isLike ? 1 : -1);
-
-        data.TargetID = wrap.attr('id').replace('divAnsVote', '');
-        data.Type = 1;
-        data.IsLike = isLike;
-        data.IsUpdate = isUpdate;
-
-        $.ajax('/Question/SaveVote', {
-            type: 'POST',
-            data: JSON.stringify(data),
-            contentType: 'application/json',
-            beforeSend: function () {
-                wrap.find('a').addClass('not-active');
-            },
-            success: function () {
-                wrap.find('.new').removeClass('new');
-                wrap.find('#spnVoteDiff').text(parseInt(wrap.find('#spnVoteDiff').text()) + valueChange);
-                wrap.find(isLike ? 'a:last' : 'a:first').removeClass('not-active');
-            },
-            error: function () {
-                DisplayErrorInfo('投票操作出现问题……');
-                wrap.find(isLike ? 'a:first' : 'a:last').removeClass('not-active');
-            }
-        });
-    });
-
     $(document).on('click', '.question-detail .action .like', function (e) {
         e.preventDefault();
 
@@ -249,9 +209,8 @@ $(document).ready(function () {
         data.IsLike = isLike;
         data.IsUpdate = isUpdate;
 
-        $.ajax({
+        $.ajax("/Question/SaveVote", {
             type: "POST",
-            url: "/Question/SaveVote",
             data: JSON.stringify(data),
             contentType: 'application/json',
             beforeSend: function () {
@@ -265,8 +224,9 @@ $(document).ready(function () {
                     opposite.find(classIndexSelector).html(oppositeCountUpdate);
                 }
             },
-            error: function () {
-                DisplayErrorInfo('投票操作出现问题……');
+            error: function (xhr) {
+                var json = $.parseJSON(xhr.responseText);
+                DisplayErrorInfo(json.errorMessage);
                 if (isUpdate) {
                     $this.removeClass(classNonActive);
                 }
@@ -300,9 +260,8 @@ $(document).ready(function () {
         data.IsLike = isLike;
         data.IsUpdate = isUpdate;
 
-        $.ajax({
+        $.ajax("/Question/SaveVote", {
             type: "POST",
-            url: "/Question/SaveVote",
             data: JSON.stringify(data),
             contentType: 'application/json',
             beforeSend: function () {
@@ -316,8 +275,9 @@ $(document).ready(function () {
                     opposite.find(classIndexSelector).html(oppositeCountUpdate);
                 }
             },
-            error: function () {
-                DisplayErrorInfo('投票操作出现问题……');
+            error: function (xhr) {
+                var json = $.parseJSON(xhr.responseText);
+                DisplayErrorInfo(json.errorMessage);
                 if (isUpdate) {
                     $this.removeClass(classNonActive);
                 }
@@ -351,9 +311,8 @@ $(document).ready(function () {
         data.IsLike = isLike;
         data.IsUpdate = isUpdate;
 
-        $.ajax({
+        $.ajax("/Question/SaveVote", {
             type: "POST",
-            url: "/Question/SaveVote",
             data: JSON.stringify(data),
             contentType: 'application/json',
             beforeSend: function () {
@@ -367,8 +326,9 @@ $(document).ready(function () {
                     opposite.find(classIndexSelector).html(oppositeCountUpdate);
                 }
             },
-            error: function () {
-                DisplayErrorInfo('投票操作出现问题……');
+            error: function (xhr) {
+                var json = $.parseJSON(xhr.responseText);
+                DisplayErrorInfo(json.errorMessage);
                 if (isUpdate) {
                     $this.removeClass(classNonActive);
                 }
@@ -402,3 +362,37 @@ $(document).ready(function () {
         }
     })
 });
+
+//$(document).on('click', 'div[id^="divAnsVote"] a', function (e) {
+//    e.preventDefault();
+//    var $this = $(this),
+//        wrap = $this.closest('div[id^="divAnsVote"]'),
+//        isLike = $this.html() == "赞",
+//        isUpdate = !$this.hasClass('new'),
+//        data = new Object(),
+//        valueChange = (isUpdate ? 2 : 1) * (isLike ? 1 : -1);
+
+//    data.TargetID = wrap.attr('id').replace('divAnsVote', '');
+//    data.Type = 1;
+//    data.IsLike = isLike;
+//    data.IsUpdate = isUpdate;
+
+//    $.ajax('/Question/SaveVote', {
+//        type: 'POST',
+//        data: JSON.stringify(data),
+//        contentType: 'application/json',
+//        beforeSend: function () {
+//            wrap.find('a').addClass('not-active');
+//        },
+//        success: function () {
+//            wrap.find('.new').removeClass('new');
+//            wrap.find('#spnVoteDiff').text(parseInt(wrap.find('#spnVoteDiff').text()) + valueChange);
+//            wrap.find(isLike ? 'a:last' : 'a:first').removeClass('not-active');
+//        },
+//        error: function (xhr) {
+//            var json = $.parseJSON(xhr.responseText);
+//            DisplayErrorInfo(json.errorMessage);
+//            wrap.find(isLike ? 'a:first' : 'a:last').removeClass('not-active');
+//        }
+//    });
+//});

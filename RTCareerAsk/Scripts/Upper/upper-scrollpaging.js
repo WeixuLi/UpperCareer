@@ -59,7 +59,6 @@
 
                         if (resultCount > 0) {
                             pageIndex++;
-                            //DisplaySuccessInfo('更新了<strong>' + resultCount + '</strong>条新内容，当前页面：<strong>' + pageIndex + '</strong>');
                             $this.find(config.itemSelector).parent().append($(result).find(config.itemSelector));
                             onLoading = false;
                             config.postAction();
@@ -70,8 +69,9 @@
                             $this.after(endTag);
                         }
                     },
-                    error: function () {
-                        DisplayErrorInfo('对不起，读取新内容时出错，请稍后再试');
+                    error: function (xhr) {
+                        var json = $.parseJSON(xhr.responseText);
+                        DisplayErrorInfo(json.errorMessage);
                         onLoading = false;
                     },
                     complete: function () {

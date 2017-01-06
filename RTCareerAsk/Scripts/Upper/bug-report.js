@@ -38,6 +38,7 @@ function OnUpdateSuccess() {
     DisplaySuccessInfo('报告状态已变更！')
 }
 
-function OnUpdateFailure() {
-    DisplayErrorInfo('变更状态出现问题，请您查看……');
+function OnUpdateFailure(xhr) {
+    var json = $.parseJSON(xhr.responseText);
+    DisplayErrorInfo(json.errorMessage);
 }

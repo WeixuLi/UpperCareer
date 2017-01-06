@@ -12,7 +12,7 @@
             changePortrait = "@Url.Action("ChangePortrait", "Account")",
             updateContent = "@Url.Action("UpdateContent", "Question")",
             deleteAnswerOrComment = "@Url.Action("Delete", "Question")",
-            deleteMessage = "@Url.Action("DeleteMessage","Message")",
+            deleteMessage = "@Url.Action("DeleteMessage", "Message")",
             confirmDel = "@Url.Action("CreateDeleteComfirmationModal", "Home")"
 
         var pageTopOffset = 90;
@@ -70,8 +70,23 @@
         <footer id="footer">
             <div class="container">
                 <div style="text-align: center">
-                    @*<p>&copy; @DateTime.Now.Year - Upper - Boost your life</p>*@
-                    <p>&copy; 2016拉夫德尔网络科技 | 京ICP备16057288号</p>
+                    <p>
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        @Html.ActionLink("精选", "Index", "Article")
+                        &nbsp;&nbsp;
+                        @Html.ActionLink("问答", "Index", "Question")
+                        &nbsp;&nbsp;
+                        @Html.ActionLink("邀请码", "Detail", "Article", new { id = "58352719880741006cfd4ac7" }, null)
+                        &nbsp;&nbsp;
+                        @Html.ActionLink("社区手册", "Detail", "Article", new { id = "5844e0ab128fe10058ad870e" }, null)
+                        &nbsp;&nbsp;
+                        @Html.ActionLink("如何提问", "AnswerDetail", "Question", new { id = "5836916561ff4b475bd63462" }, null)
+                        &nbsp;&nbsp;
+                        @Html.ActionLink("用户协议", "Terms", "Document")
+                    </p>
+                    <p>
+                        &copy; 2017 UpperCareer. 
+                    </p>
                 </div>
             </div>
         </footer>

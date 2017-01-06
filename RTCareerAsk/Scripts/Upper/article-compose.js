@@ -72,8 +72,9 @@ $(document).ready(function () {
                 success: function (result) {
                     inputCover.val(result.url);
                 },
-                error: function (e) {
-                    DisplayErrorInfo('更换头像出现问题，请您查看……');
+                error: function (xhr) {
+                    var json = $.parseJSON(xhr.responseText);
+                    DisplayErrorInfo(json.errorMessage);
                 },
                 complete: function () {
                     btn.removeClass('disabled').text(btnText);

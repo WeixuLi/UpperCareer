@@ -57,10 +57,7 @@ namespace RTCareerAsk.DAL.Domain
                 throw new InvalidOperationException(string.Format("获取的对象{0}不是资讯评论类object。对象类型：{1}", cmts.First().ObjectId, cmts.First().ClassName));
             }
 
-            foreach (AVObject cmt in cmts)
-            {
-                Comments.Add(new ArticleComment(cmt));
-            }
+            Comments.AddRange(cmts.Select(x => new ArticleComment(x)));
 
             return this;
         }
@@ -169,10 +166,7 @@ namespace RTCareerAsk.DAL.Domain
                 throw new InvalidOperationException(string.Format("获取的对象{0}不是资讯类object。对象类型：{1}", atcls.First().ObjectId, atcls.First().ClassName));
             }
 
-            foreach (AVObject atcl in atcls)
-            {
-                TopArticles.Add(new ArticleInfo(atcl));
-            }
+            TopArticles.AddRange(atcls.Select(x => new ArticleInfo(x)));
 
             return this;
         }

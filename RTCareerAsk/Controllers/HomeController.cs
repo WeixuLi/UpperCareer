@@ -32,6 +32,23 @@ namespace RTCareerAsk.Controllers
         }
 
         [HttpPost]
+        [UpperResult]
+        public async Task<ActionResult> SearchResults(string keyword)
+        {
+            try
+            {
+                SearchResultModel result = await HomeDa.SearchStupid(HasUserInfo ? GetUserID() : null, keyword);
+
+                return View(result);
+            }
+            catch (Exception e)
+            {
+                while (e.InnerException != null) e = e.InnerException;
+                throw e;
+            }
+        }
+
+        [HttpPost]
         public async Task<ContentResult> UploadImage(HttpPostedFileBase upload)
         {
             var url = await HomeDa.UploadImageFile(CreateFileModelForUpload(upload));
@@ -57,35 +74,53 @@ namespace RTCareerAsk.Controllers
         }
 
         [HttpPost]
+        [UpperJsonExceptionFilter]
         public PartialViewResult CreateImgDisplayModal(string src)
         {
-            ViewBag.Src = src;
+            try
+            {
+                ViewBag.Src = src;
 
-            return PartialView("_ImgDisplayModal");
+                return PartialView("_ImgDisplayModal");
+            }
+            catch (Exception e)
+            {
+                while (e.InnerException != null) e = e.InnerException;
+                throw e;
+            }
         }
 
         [HttpPost]
+        [UpperJsonExceptionFilter]
         public PartialViewResult CreateDeleteComfirmationModal(DeleteModel model)
         {
-            if (string.IsNullOrEmpty(model.Title))
+            try
             {
-                switch (model.Type)
+                if (string.IsNullOrEmpty(model.Title))
                 {
-                    case 1:
-                        model.Title = "确认删除这条答案？";
-                        break;
-                    case 2:
-                        model.Title = "确认删除这条评论？";
-                        break;
-                    case 3:
-                        model.Title = "确认删除这条私信？";
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(string.Format("请求类型超出范围。收到的请求：{0}", model.Type));
+                    switch (model.Type)
+                    {
+                        case 1:
+                            model.Title = "确认删除这条答案？";
+                            break;
+                        case 2:
+                            model.Title = "确认删除这条评论？";
+                            break;
+                        case 3:
+                            model.Title = "确认删除这条私信？";
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(string.Format("请求类型超出范围。收到的请求：{0}", model.Type));
+                    }
                 }
-            }
 
-            return PartialView("_ConfirmDel", model);
+                return PartialView("_ConfirmDel", model);
+            }
+            catch (Exception e)
+            {
+                while (e.InnerException != null) e = e.InnerException;
+                throw e;
+            }
         }
 
         public async Task<ActionResult> FileListPage()

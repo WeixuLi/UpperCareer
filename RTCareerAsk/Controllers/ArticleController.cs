@@ -73,6 +73,7 @@ namespace RTCareerAsk.Controllers
 
         [HttpPost]
         [UpperResult]
+        [UpperJsonExceptionFilter]
         public async Task<PartialViewResult> PostComment(ArticleCommentPostModel model)
         {
             try
@@ -96,6 +97,7 @@ namespace RTCareerAsk.Controllers
 
         [HttpPost]
         [UpperResult]
+        [UpperJsonExceptionFilter]
         public async Task<PartialViewResult> DeleteComment(string acmtId, string atclId, int replaceIndex)
         {
             try
@@ -118,6 +120,7 @@ namespace RTCareerAsk.Controllers
         }
 
         [HttpPost]
+        [UpperJsonExceptionFilter]
         public async Task<PartialViewResult> LoadArticlesByPage(int pageIndex)
         {
             try
@@ -132,6 +135,7 @@ namespace RTCareerAsk.Controllers
         }
 
         [HttpPost]
+        [UpperJsonExceptionFilter]
         public async Task<PartialViewResult> LoadArticleCommentsByPage(string targetId, int pageIndex)
         {
             try
@@ -149,30 +153,40 @@ namespace RTCareerAsk.Controllers
 
         [HttpPost]
         [ValidateInput(false)]
+        [UpperJsonExceptionFilter]
         public async Task<ActionResult> Compose(ArticlePostModel model)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                throw new ArgumentException("您输入的内容不符合格式");
+                if (!ModelState.IsValid)
+                {
+                    throw new ArgumentException("您输入的内容不符合格式");
+                }
+                else if (!HasUserInfo)
+                {
+                    throw new InvalidOperationException("请您先登录进行操作");
+                }
+
+                if (model.HasReference)
+                {
+                    model.Content = ModifyTextareaData(model.Content, true);
+                }
+
+                model.EditorID = GetUserID();
+
+                await ArticleDa.PostNewArticle(model);
+
+                return RedirectToAction("Index", "Home");
             }
-            else if (!HasUserInfo)
+            catch (Exception e)
             {
-                throw new InvalidOperationException("请您先登录进行操作");
+                while (e.InnerException != null) e = e.InnerException;
+                throw e;
             }
-
-            if (model.HasReference)
-            {
-                model.Content = ModifyTextareaData(model.Content, true);
-            }
-
-            model.EditorID = GetUserID();
-
-            await ArticleDa.PostNewArticle(model);
-
-            return RedirectToAction("Index", "Home");
         }
 
         [HttpPost]
+        [UpperJsonExceptionFilter]
         public async Task<JsonResult> UploadCoverPic(HttpPostedFileBase cover)
         {
             try

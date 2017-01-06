@@ -35,6 +35,7 @@ namespace RTCareerAsk.Controllers
         }
 
         [HttpPost]
+        [UpperJsonExceptionFilter]
         public async Task FollowUser(string id)
         {
             try
@@ -56,6 +57,7 @@ namespace RTCareerAsk.Controllers
         }
 
         [HttpPost]
+        [UpperJsonExceptionFilter]
         public async Task UnfollowUser(string id)
         {
             try
@@ -77,30 +79,48 @@ namespace RTCareerAsk.Controllers
         }
 
         [HttpPost]
+        [UpperJsonExceptionFilter]
         public async Task<PartialViewResult> RecentRecord(int contentType, string targetId, int pageIndex)
         {
-            if (contentType == 1)
+            try
             {
-                return PartialView("_RecentQuestions", await UserDa.GetRecentQuestions(targetId, pageIndex));
+                if (contentType == 1)
+                {
+                    return PartialView("_RecentQuestions", await UserDa.GetRecentQuestions(targetId, pageIndex));
+                }
+                else if (contentType == 2)
+                {
+                    return PartialView("_RecentAnswers", await UserDa.GetRecentAnswers(targetId, pageIndex));
+                }
+                else
+                {
+                    throw new ArgumentOutOfRangeException("所提供的操作代码不符合要求。");
+                }
             }
-            else if (contentType == 2)
+            catch (Exception e)
             {
-                return PartialView("_RecentAnswers", await UserDa.GetRecentAnswers(targetId, pageIndex));
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException("所提供的操作代码不符合要求。");
+                while (e.InnerException != null) e = e.InnerException;
+                throw e;
             }
         }
 
         [HttpPost]
         [UpperResult]
+        [UpperJsonExceptionFilter]
         public async Task<PartialViewResult> FollowersOrFollowees(bool contentType, string targetId, int pageIndex)
         {
-            ViewBag.TargetId = targetId;
-            ViewBag.ContentType = contentType;
+            try
+            {
+                ViewBag.TargetId = targetId;
+                ViewBag.ContentType = contentType;
 
-            return PartialView("_UserTagList", await UserDa.LoadFollowersOrFollowees(HasUserInfo ? GetUserID() : null, targetId, contentType, pageIndex));
+                return PartialView("_UserTagList", await UserDa.LoadFollowersOrFollowees(HasUserInfo ? GetUserID() : null, targetId, contentType, pageIndex));
+            }
+            catch (Exception e)
+            {
+                while (e.InnerException != null) e = e.InnerException;
+                throw e;
+            }
         }
 
         [HttpPost]

@@ -25,11 +25,17 @@ body {
 
 #footer {
     position: absolute;
+    display: flex;
+    -ms-flex-flow: column;
+    -webkit-flex-flow: column;
+    flex-flow: column;
+    justify-content: center;
     bottom: 0;
     width: 100%;
     height: 60px;
-    background-color: #333333;
+    border-top: 1px solid #f1f1f1;
     color: #999999;
+    font-size: 10px;
     text-align: center;
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr = '#ffffff', endColorstr = '#1b0057');
     /*INNER ELEMENTS MUST NOT BREAK THIS ELEMENTS BOUNDARIES*/
@@ -241,31 +247,28 @@ a {
 
 @media screen and (max-width: 768px) {
     .content-info .section-wrap {
-        display: flex;
-        -ms-flex-flow: column;
-        -webkit-flex-flow: column;
-        flex-flow: column;
-        align-items: flex-start;
+        display: block;
     }
 
     .content-info .section.text {
         margin-top: 10px;
         margin-left: 0;
+        width: 100%;
     }
 
-    .content-info .section.reply-count {
-        display: none;
+    .content-info .section.number {
+        display: inline-block;
     }
 
-    .content-info .section.number span {
-        font-size: 14px;
-        display: inline;
-    }
-
-        .content-info .section.number span:last-child {
-            margin-left: -0.5em;
-            margin-right: 0.5em;
+        .content-info .section.number span {
+            font-size: 14px;
+            display: inline;
         }
+
+            .content-info .section.number span:last-child {
+                margin-left: -0.5em;
+                margin-right: 0.5em;
+            }
 }
 
 .comment-form {
@@ -798,7 +801,7 @@ a {
 
 /*Upper Arrows*/
 
-.arrow {
+.answer-detail .arrow {
     width: 40px;
     margin-right: 15px;
     padding: 5px 10px;
@@ -810,16 +813,16 @@ a {
     transition: all 150ms ease-in-out;
 }
 
-    .arrow:hover,
-    .arrow:focus {
+    .answer-detail .arrow:hover,
+    .answer-detail .arrow:focus {
         opacity: 1;
     }
 
-    .arrow:first-child {
+    .answer-detail .arrow:first-child {
         margin-top: 2px;
     }
 
-    .arrow * {
+    .answer-detail .arrow * {
         text-align: center;
         -moz-transition: all 150ms ease-in-out;
         -o-transition: all 150ms ease-in-out;
@@ -827,21 +830,21 @@ a {
         transition: all 150ms ease-in-out;
     }
 
-    .arrow > .up > .votes {
+    .answer-detail .arrow > .up > .votes {
         color: #43ac6a;
     }
 
-    .arrow > .down > .votes {
+    .answer-detail .arrow > .down > .votes {
         color: #777777;
     }
 
-    .arrow.not-active {
+    .answer-detail .arrow.not-active {
         pointer-events: none;
         cursor: default;
         opacity: 1;
     }
 
-    .arrow .up *:first-child {
+    .answer-detail .arrow .up *:first-child {
         width: 0;
         height: 0;
         border-left: 10px solid transparent;
@@ -849,12 +852,12 @@ a {
         border-bottom: 10px solid #43ac6a;
     }
 
-    .arrow .up:hover,
-    .arrow .up:focus {
+    .answer-detail .arrow .up:hover,
+    .answer-detail .arrow .up:focus {
         background-color: white;
     }
 
-    .arrow .down *:last-child {
+    .answer-detail .arrow .down *:last-child {
         width: 0;
         height: 0;
         border-left: 10px solid transparent;
@@ -862,7 +865,7 @@ a {
         border-top: 10px solid #777777;
     }
 
-    .arrow .right {
+    .answer-detail .arrow .right {
         width: 0;
         height: 0;
         border-top: 15px solid transparent;
@@ -870,12 +873,12 @@ a {
         border-left: 15px solid #aaaaaa;
     }
 
-        .arrow .right:hover,
-        .arrow .right:focus {
+        .answer-detail .arrow .right:hover,
+        .answer-detail .arrow .right:focus {
             border-left: 15px solid #444444;
         }
 
-    .arrow .left {
+    .answer-detail .arrow .left {
         width: 0;
         height: 0;
         border-top: 15px solid transparent;
@@ -883,8 +886,8 @@ a {
         border-right: 15px solid #aaaaaa;
     }
 
-        .arrow .left:hover,
-        .arrow .left:focus {
+        .answer-detail .arrow .left:hover,
+        .answer-detail .arrow .left:focus {
             border-right: 15px solid #444444;
         }
 
@@ -938,6 +941,8 @@ a {
     .notification-list > .item {
         padding: 10px 15px;
         display: flex;
+        -ms-flex-flow: row;
+        -webkit-flex-flow: row;
         flex-flow: row;
         justify-content: space-between;
     }
@@ -1118,6 +1123,21 @@ a {
     -moz-border-radius: 30px;
     -webkit-border-radius: 30px;
     border-radius: 30px;
+}
+
+.modal.loading .modal-content:before {
+    content: 'Loading...';
+    text-align: center;
+    line-height: 155px;
+    font-size: 20px;
+    background: rgba(0, 0, 0, .8);
+    position: absolute;
+    top: 69px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    color: #EEE;
+    z-index: 1000;
 }
 
 /*Upper tab styles*/

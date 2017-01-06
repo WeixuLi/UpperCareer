@@ -68,6 +68,24 @@ namespace RTCareerAsk.Models
             ConvertUserObjectToUserTagModel(u);
         }
 
+        public UserTagModel(UserTag ut)
+        {
+            ConvertUserObjectToUserTagModel(ut);
+        }
+
+        private void ConvertUserObjectToUserTagModel(UserTag ut)
+        {
+            UserID = ut.ObjectID;
+            Name = ut.Name;
+            Gender = ut.Gender;
+            Portrait = ut.Portrait;
+            Title = ut.Title;
+            Company = ut.Company;
+            HasFollowed = ut.HasFollowed;
+            FollowerCount = ut.FollowerCount;
+            AnswerCount = ut.AnswerCount;
+        }
+
         public string UserID { get; set; }
 
         public string Name { get; set; }

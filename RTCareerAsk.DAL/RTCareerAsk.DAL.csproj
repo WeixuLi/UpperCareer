@@ -60,6 +60,7 @@
     <Compile Include="Domain\Message.cs" />
     <Compile Include="Domain\History.cs" />
     <Compile Include="Domain\Question.cs" />
+    <Compile Include="Domain\SearchResult.cs" />
     <Compile Include="Domain\Test.cs" />
     <Compile Include="Domain\UpperBaseDomains.cs" />
     <Compile Include="Domain\UpperEnum.cs" />

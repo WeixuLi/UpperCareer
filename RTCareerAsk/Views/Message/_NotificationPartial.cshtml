@@ -7,7 +7,7 @@
     tabFilters.TabItems.Add("评论及回复", new RTCareerAsk.Models.ActionLinkParams() { ActionName = "LoadNotificationsByType", ControllerName = "Message", RouteValues = new { contentType = 2 } });
     tabFilters.TabItems.Add("关注", new RTCareerAsk.Models.ActionLinkParams() { ActionName = "LoadNotificationsByType", ControllerName = "Message", RouteValues = new { contentType = 3 } });
     tabFilters.ActiveItem = "所有提醒";
-    tabFilters.AjaxOptns = new AjaxOptions { HttpMethod = "Post", UpdateTargetId = "divMessageList", OnComplete = "SetScrollPaging" };
+    tabFilters.AjaxOptns = new AjaxOptions { HttpMethod = "Post", UpdateTargetId = "divMessageList", OnFailure = "OnNotificationFailure", OnComplete = "SetScrollPaging" };
     tabFilters.HtmlAttrs.Add("class", "tab-sorting");
 }
 

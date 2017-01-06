@@ -23,6 +23,13 @@ namespace RTCareerAsk.App_DLL
         Followed
     }
 
+    public enum SearchModelType
+    {
+        All,
+        Question,
+        User
+    }
+
     public enum PortraitSize
     {
         Small,

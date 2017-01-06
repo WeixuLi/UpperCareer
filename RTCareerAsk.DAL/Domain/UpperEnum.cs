@@ -12,4 +12,10 @@ namespace RTCareerAsk.DAL.Domain
         Answer
     }
 
+    public enum SearchType
+    {
+        All,
+        Question,
+        User
+    }
 }

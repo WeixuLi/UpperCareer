@@ -76,38 +76,9 @@ namespace RTCareerAsk.PLtoDA
 
         public async Task<List<UserTagModel>> LoadFollowersOrFollowees(string userId, string targetId, bool isForFollowers, int pageIndex)
         {
-            IEnumerable<User> targets = isForFollowers ? await LCDal.GetFollowers(targetId, pageIndex) : await LCDal.GetFollowees(targetId, pageIndex);
+            IEnumerable<UserTag> targets = isForFollowers ? await LCDal.GetFollowers(userId, targetId, pageIndex) : await LCDal.GetFollowees(userId, targetId, pageIndex);
 
-            List<Task<UserTagModel>> tasks = new List<Task<UserTagModel>>();
-
-            foreach (User target in targets)
-            {
-                tasks.Add(LoadUserTag(userId, target));
-            }
-
-            await Task.WhenAll(tasks.ToArray());
-
-            List<UserTagModel> results = new List<UserTagModel>();
-
-            foreach (Task<UserTagModel> task in tasks)
-            {
-                results.Add(task.Result);
-            }
-
-            return results;
-        }
-
-        public async Task<UserTagModel> LoadUserTag(string userId, User target)
-        {
-            Task<bool?> hasFollowed = LCDal.IfAlreadyFollowed(userId, target.ObjectID);
-
-            Task<int> followerCnt = LCDal.GetFollowerCount(target.ObjectID);
-
-            Task<int> answerCnt = LCDal.GetAnswerCount(target.ObjectID);
-
-            await Task.WhenAll(hasFollowed, followerCnt, answerCnt);
-
-            return new UserTagModel(target).SetFollowerAndAnswerCount(hasFollowed.Result, followerCnt.Result, answerCnt.Result);
+            return targets.Select(x => new UserTagModel(x)).ToList();
         }
 
         public async Task<UserTagModel> LoadUserTag(string userId, string targetId)
@@ -147,14 +118,7 @@ namespace RTCareerAsk.PLtoDA
                     throw t.Exception;
                 }
 
-                List<QuestionInfoModel> qms = new List<QuestionInfoModel>();
-
-                foreach (QuestionInfo q in t.Result)
-                {
-                    qms.Add(new QuestionInfoModel(q));
-                }
-
-                return qms;
+                return t.Result != null && t.Result.Count() > 0 ? t.Result.Select(x => new QuestionInfoModel(x)).ToList() : new List<QuestionInfoModel>();
             });
         }
 
@@ -167,14 +131,7 @@ namespace RTCareerAsk.PLtoDA
                     throw t.Exception;
                 }
 
-                List<AnswerInfoModel> ams = new List<AnswerInfoModel>();
-
-                foreach (AnswerInfo a in t.Result)
-                {
-                    ams.Add(new AnswerInfoModel(a));
-                }
-
-                return ams;
+                return t.Result != null && t.Result.Count() > 0 ? t.Result.Select(x => new AnswerInfoModel(x)).ToList() : new List<AnswerInfoModel>();
             });
         }
     }

@@ -160,15 +160,13 @@ namespace RTCareerAsk.DAL.Tests
         [TestMethod]
         public async Task GetFollowersTest()
         {
-            Assert.AreEqual(0, await LCDal.GetFollowers(UserId, 0).ContinueWith(t => t.Result.Count()));
+            Assert.AreEqual(0, await LCDal.GetFollowers(string.Empty, UserId, 0).ContinueWith(t => t.Result.Count()));
         }
 
         [TestMethod]
         public async Task GetFolloweesTest()
         {
-            IEnumerable<User> followees = await LCDal.GetFollowees(UserId, 0);
-
-            Assert.AreEqual(1, followees.Count());
+            Assert.AreEqual(1, await LCDal.GetFollowees(string.Empty, UserId, 0).ContinueWith(t => t.Result.Count()));
         }
 
         [TestMethod]
@@ -428,6 +426,29 @@ namespace RTCareerAsk.DAL.Tests
             Assert.AreEqual(10, await LCDal.LoadAnswersByQuestion(userId, questionId, pageIndex, isHottestFirst).ContinueWith(t => t.Result.Count()));
         }
 
+        [TestMethod]
+        public async Task SearchByKeywordStupidTest()
+        {
+            string keyword = "工作";
+
+            SearchResult result = await LCDal.SearchByKeywordStupid(keyword);
+
+            Assert.AreEqual(5, result.QuestionResults.Count);
+            Assert.AreEqual(0, result.UserResults.Count);
+        }
+
+        [TestMethod]
+        public async Task ExtendSearchByKeywordStupidTest()
+        {
+            string keyword = "工作";
+            SearchType type = (SearchType)1;
+
+            SearchResult result = await LCDal.ExtendedSearchByKeywordStupid(keyword, type);
+
+            Assert.AreEqual(type, result.ResultType);
+            Assert.AreEqual(28, result.QuestionResults.Count);
+        }
+
         #endregion
 
         #region Practice Test
@@ -561,6 +582,16 @@ namespace RTCareerAsk.DAL.Tests
         public async Task UpdateSubpostCountForAnswersTst()
         {
             Assert.IsTrue(await LCDal.UpdateSubpostCountForAnswers());
+        }
+
+        [TestMethod]
+        public async Task SearchEngineSimpleTst()
+        {
+            string keyword = "工作 影响";
+
+            SearchResult result = await LCDal.SearchEngineSimple(keyword.Split(' '));
+
+            Assert.AreEqual(33, result.QuestionResults.Count);
         }
 
         [TestMethod]

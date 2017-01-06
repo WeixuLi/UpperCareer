@@ -76,8 +76,9 @@ function OnProfileComplete() {
     submitBtn.text('保存');
 }
 
-function OnProfileFailure(result) {
-    DisplayErrorInfo(result.text);
+function OnProfileFailure(xhr) {
+    var json = $.parseJSON(xhr.responseText);
+    DisplayErrorInfo(json.errorMessage);
 }
 
 $(document).ready(function () {
@@ -138,8 +139,9 @@ $(document).ready(function () {
                     $('#divNavBar').html(result);
                     DisplaySuccessInfo('更换头像成功！');
                 },
-                error: function (e) {
-                    DisplayErrorInfo('更换头像出现问题，请您查看……');
+                error: function (xhr) {
+                    var json = $.parseJSON(xhr.responseText);
+                    DisplayErrorInfo(json.errorMessage);
                 },
                 complete: function myfunction() {
                     btn.removeClass('disabled').text('保存并更改头像');

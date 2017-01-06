@@ -40,8 +40,9 @@ function UpdateNewMsgCount() {
         success: function (result) {
             $('#divNavBar').html(result);
         },
-        error: function (e) {
-            alert(e.responseText);
+        error: function (xhr) {
+            var json = $.parseJSON(xhr.responseText);
+            DisplayErrorInfo(json.errorMessage);
         }
     });
 }
@@ -168,42 +169,43 @@ function TriggerLoginModal() {
             $('#divModal').children().html(response);
             $('#divModal').modal('show');
         },
-        error: function () {
-            DisplayErrorInfo("加载快速登录页面失败");
+        error: function (xhr) {
+            var json = $.parseJSON(xhr.responseText);
+            DisplayErrorInfo(json.errorMessage);
         }
     });
 }
 
-function RequestForDelete(data) {
-    var config = new Object()
-    {
-        id = '',
-        type = '',
-        url = '',
-        onSuccess = '',
-        title = '',
-        context = ''
-    };
+//function RequestForDelete(data) {
+//    var config = new Object()
+//    {
+//        id = '',
+//        type = '',
+//        url = '',
+//        title = '',
+//        context = ''
+//    };
 
-    var modal = $('#divModalSm');
+//    var modal = $('#divModalSm');
 
-    if (data) {
-        $.extend(config, data);
-    }
+//    if (data) {
+//        $.extend(config, data);
+//    }
 
-    $.ajax(confirmDel, {
-        type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify(config),
-        dataType: 'html',
-        success: function (result) {
-            modal.children().html(result.trim())
-        },
-        error: function () {
-            DisplayErrorInfo('读取内容失败……')
-        }
-    })
-}
+//    $.ajax(confirmDel, {
+//        type: 'POST',
+//        contentType: 'application/json',
+//        data: JSON.stringify(config),
+//        dataType: 'html',
+//        success: function (result) {
+//            modal.children().html(result.trim())
+//        },
+//        error: function (xhr) {
+//            var json = $.parseJSON(xhr.responseText);
+//            DisplayErrorInfo(json.errorMessage);
+//        }
+//    })
+//}
 
 $(document).ready(function () {
     $(document).on('click', 'button.close', function () {
@@ -216,6 +218,36 @@ $(document).ready(function () {
         TriggerLoginModal();
     });
 
+    $('#lnkFollowUs').popover({
+        html: true,
+        trigger: 'click focus',
+        //placement: function (context, source) {
+        //    var get_position = $(source).position();
+        //    if (get_position.left > 515) {
+        //        return "left";
+        //    }
+        //    if (get_position.left < 515) {
+        //        return "right";
+        //    }
+        //    if (get_position.top < 110) {
+        //        return "bottom";
+        //    }
+        //    return "top";
+        //},
+        content: function () {
+            return $('#divWechatQR').html();
+        }
+    }).on('click', function (e) {
+        e.preventDefault();
+    }).on("mouseleave", function () {
+        var _this = this;
+        setTimeout(function () {
+            if (!$(".popover:hover").length) {
+                $(_this).popover("hide")
+            }
+        }, 100);
+    });
+
     $('#btnPostQuestion').click(function (e) {
         $.ajax({
             url: loadQuestionForm,
@@ -223,8 +255,9 @@ $(document).ready(function () {
             success: function (result) {
                 $('#divModal').children().html(result);
             },
-            error: function (e) {
-                DisplayErrorInfo(e.responseText);
+            error: function (xhr) {
+                var json = $.parseJSON(xhr.responseText);
+                DisplayErrorInfo(json.errorMessage);
             }
         });
     });
@@ -240,28 +273,11 @@ $(document).ready(function () {
             success: function (result) {
                 $('#divModal').children().html(result);
             },
-            error: function (e) {
-                DisplayErrorInfo(e.responseText);
+            error: function (xhr) {
+                var json = $.parseJSON(xhr.responseText);
+                DisplayErrorInfo(json.errorMessage);
             }
         });
-    })
-
-    $('#divModalSm').on('click', '.btn-ok', function (e) {
-        var data = $(this).data(),
-            modal = $(e.delegateTarget);
-
-        $.ajax(data.href, {
-            type: 'POST',
-            data: JSON.stringify(data),
-            contentType: 'application/json',
-            success: function () {
-                $(document).trigger('delSuccess', { id: data.id, type: data.type });
-                modal.modal('hide');
-            },
-            error: function () {
-                DisplayErrorInfo('删除操作失败，请您重新尝试');
-            }
-        })
     })
 
     //Enable nav bar dropdown list with hover event.

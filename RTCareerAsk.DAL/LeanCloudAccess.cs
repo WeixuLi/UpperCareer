@@ -598,38 +598,6 @@ namespace RTCareerAsk.DAL
             //    }).Unwrap();
         }
         /// <summary>
-        /// 查询是否已经关注了目标用户。
-        /// </summary>
-        /// <param name="userId">用户ID</param>
-        /// <param name="targetId">目标用户ID</param>
-        /// <returns>代表是否已关注目标用户的Boolean值</returns>
-        public async Task<bool?> IfAlreadyFollowed(string userId, string targetId)
-        {
-            if (string.IsNullOrEmpty(userId))
-            {
-                return false;
-            }
-            else if (userId == targetId)
-            {
-                return null;
-            }
-
-            AVUser user = AVUser.CreateWithoutData("_User", userId) as AVUser;
-            AVUser target = AVUser.CreateWithoutData("_User", targetId) as AVUser;
-
-            AVQuery<AVObject> query = AVObject.GetQuery("_Followee").WhereEqualTo("user", user).WhereEqualTo("followee", target);
-
-            return await query.FindAsync().ContinueWith(t =>
-                {
-                    if (t.IsFaulted || t.IsCanceled)
-                    {
-                        throw t.Exception;
-                    }
-
-                    return t.Result.Count() > 0 ? true : false;
-                });
-        }
-        /// <summary>
         /// 查询用户的粉丝数。
         /// </summary>
         /// <param name="userId">用户ID</param>
@@ -666,48 +634,43 @@ namespace RTCareerAsk.DAL
         /// <summary>
         /// 读取用户的粉丝。
         /// </summary>
-        /// <param name="userId">用户ID</param>
+        /// <param name="userId">申请用户ID</param>
+        /// <param name="targetId">目标用户ID</param>
         /// <param name="pageIndex">页数</param>
         /// <returns>一页数量的粉丝信息</returns>
-        public async Task<IEnumerable<User>> GetFollowers(string userId, int pageIndex)
+        public async Task<IEnumerable<UserTag>> GetFollowers(string userId, string targetId, int pageIndex)
         {
             int pageCapacity = 20;
 
             return await AVObject.GetQuery("_Follower")
-                .WhereEqualTo("user", (AVUser.CreateWithoutData("_User", userId) as AVUser))
+                .WhereEqualTo("user", (AVUser.CreateWithoutData("_User", targetId) as AVUser))
                 .Include("follower")
                 .Skip(pageIndex * pageCapacity)
                 .Limit(pageCapacity)
                 .FindAsync()
                 .ContinueWith(t =>
+                {
+                    if (t.IsFaulted || t.IsCanceled)
                     {
-                        if (t.IsFaulted || t.IsCanceled)
-                        {
-                            throw t.Exception;
-                        }
+                        throw t.Exception;
+                    }
 
-                        List<User> followers = new List<User>();
-
-                        foreach (AVObject follower in t.Result)
-                        {
-                            followers.Add(new User(follower.Get<AVUser>("follower")));
-                        }
-
-                        return followers;
-                    });
+                    return BuildUserTag(true, userId, t.Result);
+                }).Unwrap();
         }
         /// <summary>
         /// 读取用户的关注。
         /// </summary>
-        /// <param name="userId">用户ID</param>
+        /// <param name="userId">申请用户ID</param>
+        /// <param name="targetId">目标用户ID</param>
         /// <param name="pageIndex">页数</param>
         /// <returns>一页数量的关注对象信息</returns>
-        public async Task<IEnumerable<User>> GetFollowees(string userId, int pageIndex)
+        public async Task<IEnumerable<UserTag>> GetFollowees(string userId, string targetId, int pageIndex)
         {
             int pageCapacity = 20;
 
             return await AVObject.GetQuery("_Followee")
-                .WhereEqualTo("user", (AVUser.CreateWithoutData("_User", userId) as AVUser))
+                .WhereEqualTo("user", (AVUser.CreateWithoutData("_User", targetId) as AVUser))
                 .Include("followee")
                 .Skip(pageIndex * pageCapacity)
                 .Limit(pageCapacity)
@@ -719,15 +682,8 @@ namespace RTCareerAsk.DAL
                         throw t.Exception;
                     }
 
-                    List<User> followees = new List<User>();
-
-                    foreach (AVObject followee in t.Result)
-                    {
-                        followees.Add(new User(followee.Get<AVUser>("followee")));
-                    }
-
-                    return followees;
-                });
+                    return BuildUserTag(false, userId, t.Result);
+                }).Unwrap();
         }
         /// <summary>
         /// 查询用户的回答数量
@@ -748,6 +704,25 @@ namespace RTCareerAsk.DAL
 
                         return t.Result;
                     });
+        }
+        /// <summary>
+        /// 生成用户的名片信息。
+        /// </summary>
+        /// <param name="userId">申请用户ID</param>
+        /// <param name="targets">目标用户集合</param>
+        /// <returns>一组用户名片信息</returns>
+        public async Task<IEnumerable<UserTag>> BuildUserTag(bool isFollowerRequest, string userId, IEnumerable<AVObject> targets)
+        {
+            List<Task<UserTag>> tasks = new List<Task<UserTag>>();
+
+            foreach (AVUser user in targets.Select(x => x.Get<AVUser>(isFollowerRequest ? "follower" : "followee")))
+            {
+                tasks.Add(BuildUserTag(userId, user));
+            }
+
+            await Task.WhenAll(tasks.ToArray());
+
+            return tasks.Select(x => x.Result);
         }
         #endregion
 
@@ -2702,6 +2677,95 @@ namespace RTCareerAsk.DAL
         }
         #endregion
 
+        #region Search
+
+        public async Task<SearchResult> SearchByKeywordStupid(string keyword)
+        {
+            int resultLimitPerCategory = 1000;
+            string regexStr = ParseSearchConditionRegex(keyword);
+
+            List<Task<IEnumerable<AVObject>>> searchTasks = new List<Task<IEnumerable<AVObject>>>();
+            List<AVObject> searchResults = new List<AVObject>();
+
+            AVQuery<AVObject> queryQuestion = AVObject.GetQuery("Post")
+                .WhereMatches("title", regexStr)
+                .Include("createdBy")
+                .OrderByDescending("voteDiff")
+                .ThenByDescending("subPostCount")
+                .Limit(resultLimitPerCategory);
+
+            AVQuery<AVUser> queryUser = AVUser.Query
+                .WhereMatches("nickname", regexStr)
+                .Limit(resultLimitPerCategory);
+
+            searchTasks.Add(queryQuestion.FindAsync().ContinueWith(t =>
+                {
+                    if (t.IsFaulted || t.IsCanceled)
+                    {
+                        throw t.Exception;
+                    }
+
+                    return t.Result;
+                }));
+            searchTasks.Add(queryUser.FindAsync().ContinueWith(t =>
+            {
+                if (t.IsFaulted || t.IsCanceled)
+                {
+                    throw t.Exception;
+                }
+
+                return t.Result as IEnumerable<AVObject>;
+            }));
+
+            await Task.WhenAll(searchTasks.ToArray());
+
+            foreach (Task<IEnumerable<AVObject>> task in searchTasks)
+            {
+                searchResults.AddRange(task.Result);
+            }
+
+            return new SearchResult(searchResults);
+        }
+
+        public async Task<SearchResult> ExtendedSearchByKeywordStupid(string keyword, SearchType type)
+        {
+            int resultLimitPerCategory = 5;
+            string regexStr = ParseSearchConditionRegex(keyword);
+
+            AVQuery<AVObject> query = new AVQuery<AVObject>("Answer");
+
+            switch (type)
+            {
+                case SearchType.Question:
+                    query = AVObject.GetQuery("Post")
+                        .WhereMatches("title", regexStr)
+                        .Include("createdBy")
+                        .OrderByDescending("voteDiff")
+                        .ThenByDescending("subPostCount");
+                    break;
+                case SearchType.User:
+                    query = AVObject.GetQuery("_User")
+                        .WhereMatches("nickname", regexStr);
+                    break;
+                default:
+                    throw new IndexOutOfRangeException("错误：不能识别的搜索类型。");
+            }
+
+            return await query
+                .Skip(resultLimitPerCategory)
+                .FindAsync()
+                .ContinueWith(t =>
+                {
+                    if (t.IsFaulted || t.IsCanceled)
+                    {
+                        throw t.Exception;
+                    }
+
+                    return new SearchResult(t.Result, type);
+                });
+        }
+        #endregion
+
         #region Universal Method
         /// <summary>
         /// 为问题或者答案条目更新浏览量。
@@ -2740,6 +2804,67 @@ namespace RTCareerAsk.DAL
 
                 return true;
             });
+        }
+        /// <summary>
+        /// 查询是否已经关注了目标用户。
+        /// </summary>
+        /// <param name="userId">用户ID</param>
+        /// <param name="targetId">目标用户ID</param>
+        /// <returns>代表是否已关注目标用户的Boolean值</returns>
+        public async Task<bool?> IfAlreadyFollowed(string userId, string targetId)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                return false;
+            }
+            else if (userId == targetId)
+            {
+                return null;
+            }
+
+            AVUser user = AVUser.CreateWithoutData("_User", userId) as AVUser;
+            AVUser target = AVUser.CreateWithoutData("_User", targetId) as AVUser;
+
+            AVQuery<AVObject> query = AVObject.GetQuery("_Followee").WhereEqualTo("user", user).WhereEqualTo("followee", target);
+
+            return await query.FindAsync().ContinueWith(t =>
+            {
+                if (t.IsFaulted || t.IsCanceled)
+                {
+                    throw t.Exception;
+                }
+
+                return t.Result.Count() > 0 ? true : false;
+            });
+        }
+
+        public async Task<UserTag> BuildUserTag(string userId, UserTag target)
+        {
+            Task<bool?> hasFollowed = IfAlreadyFollowed(userId, target.ObjectID);
+            Task<int> followerCnt = GetFollowerCount(target.ObjectID);
+            Task<int> answerCnt = GetAnswerCount(target.ObjectID);
+
+            await Task.WhenAll(hasFollowed, followerCnt, answerCnt);
+
+            return target.SetFollowerAndAnswerCount(hasFollowed.Result, followerCnt.Result, answerCnt.Result);
+        }
+        /// <summary>
+        /// 生成用户的名片信息。
+        /// </summary>
+        /// <param name="userId">申请用户ID</param>
+        /// <param name="target">目标用户</param>
+        /// <returns>一条用户名片信息</returns>
+        public async Task<UserTag> BuildUserTag(string userId, AVUser target)
+        {
+            UserTag tag = new UserTag(target);
+
+            Task<bool?> hasFollowed = IfAlreadyFollowed(userId, target.ObjectId);
+            Task<int> followerCnt = GetFollowerCount(target.ObjectId);
+            Task<int> answerCnt = GetAnswerCount(target.ObjectId);
+
+            await Task.WhenAll(hasFollowed, followerCnt, answerCnt);
+
+            return new UserTag(target).SetFollowerAndAnswerCount(hasFollowed.Result, followerCnt.Result, answerCnt.Result);
         }
         #endregion
 
@@ -3042,6 +3167,32 @@ namespace RTCareerAsk.DAL
             return true;
         }
 
+        public async Task<SearchResult> SearchEngineSimple(string[] keywords)
+        {
+            string regexStr = "";
+
+            foreach (string keyword in keywords)
+            {
+                regexStr += string.Format("(?=.*?{0})", keyword);
+            }
+
+            return await AVObject.GetQuery("Post")
+                //.WhereMatches("title", regexStr)
+                .WhereContains("title", keywords[0])
+                .OrderByDescending("voteDiff")
+                .ThenByDescending("subPostCount")
+                .FindAsync()
+                .ContinueWith(t =>
+                    {
+                        if (t.IsFaulted || t.IsCanceled)
+                        {
+                            throw t.Exception;
+                        }
+
+                        return new SearchResult(t.Result);
+                    });
+        }
+
         public async Task<bool> CreateFakeAccount(User u)
         {
             AVUser user = u.CreateUserObjectForRegister();
@@ -3236,6 +3387,18 @@ namespace RTCareerAsk.DAL
                 MetaData = f.Get<IDictionary<string, object>>("metaData"),
                 DateCreate = Convert.ToDateTime(f.CreatedAt)
             };
+        }
+
+        private string ParseSearchConditionRegex(string keyword)
+        {
+            string[] keywords = keyword.Split(' ');
+            string regexStr = "";
+            foreach (string key in keywords)
+            {
+                regexStr += string.Format("(?=.*?{0})", key);
+            }
+
+            return regexStr;
         }
 
         #endregion

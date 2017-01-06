@@ -39,7 +39,8 @@ function OnAtclCmtComplete(formClass, xhr, status) {
 }
 
 function OnAtclCmtFailure(xhr, status, error) {
-    DisplayErrorInfo(error)
+    var json = $.parseJSON(xhr.responseText);
+    DisplayErrorInfo(json.errorMessage);
 }
 
 $(document).ready(function () {
@@ -113,8 +114,9 @@ $(document).ready(function () {
                     $('span.marked-number').text($('.article-comment-list').find('li:visible').length);
                 })
             },
-            error: function (xhr, status, error) {
-                DisplayErrorInfo(error)
+            error: function (xhr) {
+                var json = $.parseJSON(xhr.responseText);
+                DisplayErrorInfo(json.errorMessage);
             },
             complete: function () {
                 $('.cmt-delete').removeAttr('disabled')

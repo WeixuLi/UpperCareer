@@ -12,7 +12,7 @@
     tabContent.TabItems.Add("答案", new RTCareerAsk.Models.ActionLinkParams() { ActionName = "LoadContentInfo", ControllerName = "Question", RouteValues = new { id = 2 } });
     tabContent.TabItems.Add("问题", new RTCareerAsk.Models.ActionLinkParams() { ActionName = "LoadContentInfo", ControllerName = "Question", RouteValues = new { id = 0 } });
     tabContent.ActiveItem = "答案";
-    tabContent.AjaxOptns = new AjaxOptions { HttpMethod = "Post", UpdateTargetId = "divQuestionList", OnBegin = "OnUpdateContentBegin", OnComplete = "OnUpdateListComplete" };
+    tabContent.AjaxOptns = new AjaxOptions { HttpMethod = "Post", UpdateTargetId = "divQuestionList", OnBegin = "OnUpdateContentBegin", OnFailure = "OnUpdateContentFailure", OnComplete = "OnUpdateListComplete" };
     tabContent.HtmlAttrs.Add("class", "tab-content");
 }
 
@@ -79,7 +79,7 @@
     });
 </script>
 
-<div style="max-width: 700px" class="centered">
+<div style="max-width: 700px" class="centered clear-fix">
     <div class="content-info-tab">
         @Ajax.UpperTab(tabContent, null)
         @Ajax.UpperTab(tabSorting, null)

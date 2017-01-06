@@ -31,10 +31,12 @@ namespace RTCareerAsk
                         "~/Scripts/Upper/fix-image-display.js",
                         "~/Scripts/Upper/upper-shorten.js",
                         "~/Scripts/Upper/upper-scrollpaging.js",
+                        "~/Scripts/Upper/upper-confirmdialog.js",
                         "~/Scripts/Upper/question-answer-edit.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/answer").Include(
                         "~/Scripts/Upper/fix-image-display.js",
+                        "~/Scripts/Upper/upper-confirmdialog.js",
                         "~/Scripts/Upper/question-answer-edit.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/user").Include(
@@ -48,6 +50,7 @@ namespace RTCareerAsk
             bundles.Add(new ScriptBundle("~/bundles/message").Include(
                         "~/Scripts/Upper/upper-scrollpaging.js",
                         "~/Scripts/Upper/upper-tabs.js",
+                        "~/Scripts/Upper/upper-confirmdialog.js",
                         "~/Scripts/Upper/notification-index.js",
                         "~/Scripts/Upper/message-index.js"));
 

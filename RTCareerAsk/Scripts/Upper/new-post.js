@@ -58,16 +58,19 @@ function OnCmtComplete() {
     UpdateCmtCount();
 }
 
-function OnPostFailure(e) {
-    DisplayErrorInfo('提交问题出现问题，请您查看……');
+function OnPostFailure(xhr) {
+    var json = $.parseJSON(xhr.responseText);
+    DisplayErrorInfo(json.errorMessage);
 }
 
-function OnAnsFailure(e) {
-    DisplayErrorInfo('提交答案出现问题，请您查看……');
+function OnAnsFailure(xhr) {
+    var json = $.parseJSON(xhr.responseText);
+    DisplayErrorInfo(json.errorMessage);
 }
 
-function OnCmtFailure(e) {
-    DisplayErrorInfo('提交评论出现问题，请您查看……');
+function OnCmtFailure(xhr) {
+    var json = $.parseJSON(xhr.responseText);
+    DisplayErrorInfo(json.errorMessage);
 }
 
 function OnLetterBegin() {
@@ -85,8 +88,9 @@ function OnLetterComplete() {
 
 }
 
-function OnLetterFailure() {
-    DisplayErrorInfo('发送信件出现问题，请您查看……');
+function OnLetterFailure(xhr) {
+    var json = $.parseJSON(xhr.responseText);
+    DisplayErrorInfo(json.errorMessage);
 }
 
 function OnQuickPostBegin() {
@@ -109,7 +113,8 @@ function OnQuickPostSuccess() {
 
 function OnQuickPostComplete() { }
 
-function OnQuickPostFailure() {
-    DisplayErrorInfo('提交问题出现问题，请您重试……');
+function OnQuickPostFailure(xhr) {
+    var json = $.parseJSON(xhr.responseText);
+    DisplayErrorInfo(json.errorMessage);
     $('#formQuickPost').find('input[type="submit"]').removeClass('disabled').val('提问');
 }

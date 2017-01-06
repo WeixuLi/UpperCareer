@@ -4,6 +4,9 @@
     if (img.is(':hidden')) {
         return false
     }
+    //if (!parent.hasClass('img-wrap')) {
+    //    alert('Image src: ' + img.attr('src').split('/')[3] + '\nWidth ratio: ' + img.width() / parent.width());
+    //}
 
     if (!img.hasClass('resized') && img.width() > parent.width()) {
         var maxWidth = img.width(),
@@ -25,9 +28,7 @@
         var maxWidth = img.data('maxwidth'),
             maxHeight = img.data('maxwidth') / img.data('ratio');
 
-        //alert(img.data('ratio') + '\n' + maxWidth + '\n' + maxHeight)
-
-        img.attr('width', maxWidth); 
+        img.attr('width', maxWidth);
         img.attr('height', maxHeight);
         img.removeAttr('data-maxwidth');
         img.removeAttr('data-ratio');
@@ -59,7 +60,7 @@ function Resize() {
             ResizeImage($(this));
         });
 
-    $(document).on('click','.resized',function (e) {
+    $(document).on('click', '.resized', function (e) {
         e.preventDefault();
         var $this = $(this),
             src = $this.attr('src'),
@@ -74,8 +75,9 @@ function Resize() {
                 modal.children().html(result);
                 modal.modal('show');
             },
-            error: function (e) {
-                DisplayErrorInfo('加载图片时发生错误，请刷新');
+            error: function (xhr) {
+                var json = $.parseJSON(xhr.responseText);
+                DisplayErrorInfo(json.errorMessage);
             }
         })
     });

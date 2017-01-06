@@ -22,14 +22,7 @@ namespace RTCareerAsk.PLtoDA
         {
             if (ps != null && ps.Count() > 0)
             {
-                List<QuestionInfoModel> qims = new List<QuestionInfoModel>();
-
-                foreach (QuestionInfo p in ps)
-                {
-                    qims.Add(new QuestionInfoModel(p));
-                }
-
-                return qims;
+                return ps.Select(x => new QuestionInfoModel(x)).ToList();
             }
 
             return null;
@@ -39,14 +32,7 @@ namespace RTCareerAsk.PLtoDA
         {
             if (fis != null && fis.Count() > 0)
             {
-                List<FileInfoModel> fims = new List<FileInfoModel>();
-
-                foreach (FileInfo fi in fis)
-                {
-                    fims.Add(new FileInfoModel(fi));
-                }
-
-                return fims;
+                return fis.Select(x => new FileInfoModel(x)).ToList();
             }
 
             return null;
@@ -55,7 +41,7 @@ namespace RTCareerAsk.PLtoDA
         #endregion
 
         #region Public Method
-        
+
         public async Task<int> LoadMessageCount(string userId)
         {
             return await LCDal.CountNewMessageForUser(userId);

@@ -71,6 +71,7 @@ namespace RTCareerAsk.Controllers
         }
 
         [HttpPost]
+        [UpperJsonExceptionFilter]
         public async Task<PartialViewResult> LoadContentInfo(int id)
         {
             try
@@ -95,6 +96,7 @@ namespace RTCareerAsk.Controllers
         }
 
         [HttpPost]
+        [UpperJsonExceptionFilter]
         public async Task<PartialViewResult> LoadContentUpdate(int contentType, int pageIndex)
         {
             try
@@ -119,6 +121,7 @@ namespace RTCareerAsk.Controllers
         }
 
         [HttpPost]
+        [UpperJsonExceptionFilter]
         public PartialViewResult CreateQuestionForm()
         {
             try
@@ -133,21 +136,8 @@ namespace RTCareerAsk.Controllers
         }
 
         [HttpPost]
-        public PartialViewResult CreateCommentForm(string ansId, string ntfyId, string prefixText = "")
-        {
-            try
-            {
-                return PartialView("_CommentForm", new CommentPostModel() { AnswerID = ansId, NotifyUserID = ntfyId, PostContent = prefixText });
-            }
-            catch (Exception e)
-            {
-                while (e.InnerException != null) e = e.InnerException;
-                throw e;
-            }
-        }
-
-        [HttpPost]
         [ValidateInput(false)]
+        [UpperJsonExceptionFilter]
         public async Task<PartialViewResult> PostQuestion(QuestionPostModel p)
         {
             try
@@ -176,6 +166,7 @@ namespace RTCareerAsk.Controllers
         [UpperResult]
         [HttpPost]
         [ValidateInput(false)]
+        [UpperJsonExceptionFilter]
         public async Task<PartialViewResult> PostAnswer(AnswerPostModel a)
         {
             try
@@ -204,6 +195,7 @@ namespace RTCareerAsk.Controllers
 
         [UpperResult]
         [HttpPost]
+        [UpperJsonExceptionFilter]
         public async Task<PartialViewResult> PostComment(CommentPostModel c)
         {
             try
@@ -234,40 +226,47 @@ namespace RTCareerAsk.Controllers
         }
 
         [HttpPost]
+        [UpperJsonExceptionFilter]
         public async Task UpdateContent(bool isQuestion, string id, string content)
         {
-            await QuestionDa.UpdateContent(isQuestion, id, content);
-        }
-
-        [HttpPost]
-        public async Task Delete(string id, QACType type)
-        {
-            switch (type)
+            try
             {
-                case QACType.Answer:
-                    await QuestionDa.DeleteAnswerWithComments(id);
-                    break;
-                case QACType.Comment:
-                    await QuestionDa.DeleteComment(id);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(string.Format("请求类型超出范围。收到的请求：{0}", type));
+                await QuestionDa.UpdateContent(isQuestion, id, content);
+            }
+            catch (Exception e)
+            {
+                while (e.InnerException != null) e = e.InnerException;
+                throw e;
             }
         }
 
         [HttpPost]
-        public async Task DeleteAnswer(string ansId)
+        [UpperJsonExceptionFilter]
+        public async Task Delete(string id, QACType type)
         {
-            await QuestionDa.DeleteAnswerWithComments(ansId);
+            try
+            {
+                switch (type)
+                {
+                    case QACType.Answer:
+                        await QuestionDa.DeleteAnswerWithComments(id);
+                        break;
+                    case QACType.Comment:
+                        await QuestionDa.DeleteComment(id);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(string.Format("请求类型超出范围。收到的请求：{0}", type));
+                }
+            }
+            catch (Exception e)
+            {
+                while (e.InnerException != null) e = e.InnerException;
+                throw e;
+            }
         }
 
         [HttpPost]
-        public async Task DeleteComment(string cmtId)
-        {
-            await QuestionDa.DeleteComment(cmtId);
-        }
-
-        [HttpPost]
+        [UpperJsonExceptionFilter]
         public async Task SaveVote(VoteModel model)
         {
             try
@@ -286,6 +285,7 @@ namespace RTCareerAsk.Controllers
 
         [UpperResult]
         [HttpPost]
+        [UpperJsonExceptionFilter]
         public async Task<PartialViewResult> LoadAnswersDetails(string targetId, int pageIndex, int contentType)
         {
             try
@@ -302,6 +302,8 @@ namespace RTCareerAsk.Controllers
                 throw e;
             }
         }
+
+        #region Helpers
 
         private QuestionModel SetFlagsForActions(QuestionModel model)
         {
@@ -377,5 +379,38 @@ namespace RTCareerAsk.Controllers
 
             return models;
         }
+
+        #endregion
+
+        #region Trunk
+
+        //[HttpPost]
+        //public async Task DeleteAnswer(string ansId)
+        //{
+        //    await QuestionDa.DeleteAnswerWithComments(ansId);
+        //}
+
+        //[HttpPost]
+        //public async Task DeleteComment(string cmtId)
+        //{
+        //    await QuestionDa.DeleteComment(cmtId);
+        //}
+
+        //[HttpPost]
+        //[JsonExceptionFilter]
+        //public PartialViewResult CreateCommentForm(string ansId, string ntfyId, string prefixText = "")
+        //{
+        //    try
+        //    {
+        //        return PartialView("_CommentForm", new CommentPostModel() { AnswerID = ansId, NotifyUserID = ntfyId, PostContent = prefixText });
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        while (e.InnerException != null) e = e.InnerException;
+        //        throw e;
+        //    }
+        //}
+
+        #endregion
     }
 }

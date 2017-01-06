@@ -15,6 +15,11 @@ function OnUpdateContentBegin(xhr, settings) {
     return true;
 }
 
+function OnUpdateContentFailure(xhr) {
+    var json = $.parseJSON(xhr.responseText);
+    DisplayErrorInfo(json.errorMessage);
+}
+
 function OnUpdateListComplete() {
     var qLst = $('#divQuestionList > .content-info > .box').children('div'),
         length = qLst.length,

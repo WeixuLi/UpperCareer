@@ -7,7 +7,7 @@
     tabModel.TabItems.Add("关注" + (Model.Gender == 0 ? "TA" : Model.Gender == 1 ? "他" : "她") + "的", new RTCareerAsk.Models.ActionLinkParams() { ActionName = "FollowersOrFollowees", ControllerName = "User", RouteValues = new { contentType = true, targetId = Model.UserID, pageIndex = 0 } });
     tabModel.TabItems.Add((Model.Gender == 0 ? "TA" : Model.Gender == 1 ? "他" : "她") + "关注的", new RTCareerAsk.Models.ActionLinkParams() { ActionName = "FollowersOrFollowees", ControllerName = "User", RouteValues = new { contentType = false, targetId = Model.UserID, pageIndex = 0 } });
     tabModel.ActiveItem = "提问";
-    tabModel.AjaxOptns = new AjaxOptions { HttpMethod = "Post", UpdateTargetId = "divUserRecord", OnComplete = "OnUpdateContentComplete" };
+    tabModel.AjaxOptns = new AjaxOptions { HttpMethod = "Post", UpdateTargetId = "divUserRecord", OnFailure = "OnUpdateContentFailure", OnComplete = "OnUpdateContentComplete" };
 }
 
 <div class="user-page">

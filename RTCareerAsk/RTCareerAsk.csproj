@@ -229,6 +229,7 @@
     <Compile Include="Models\HistoryModel.cs" />
     <Compile Include="Models\PostModels.cs" />
     <Compile Include="Models\QuestionModels.cs" />
+    <Compile Include="Models\SearchResultModel.cs" />
     <Compile Include="Models\TestModels.cs" />
     <Compile Include="Models\UpperBaseModels.cs" />
     <Compile Include="Models\UpperControlModels.cs" />
@@ -672,6 +673,7 @@
     <None Include="Properties\PublishProfiles\QCloud.pubxml" />
     <None Include="Scripts\jquery-1.9.1.intellisense.js" />
     <Content Include="Images\error.png" />
+    <Content Include="Images\QRCode.png" />
     <Content Include="Images\spin.gif" />
     <Content Include="Images\post.png" />
     <Content Include="Images\notification.png" />
@@ -704,6 +706,7 @@
     <Content Include="Scripts\Upper\notification-all.js" />
     <Content Include="Scripts\Upper\notification-index.js" />
     <Content Include="Scripts\Upper\upper-article-detail.js" />
+    <Content Include="Scripts\Upper\upper-confirmdialog.js" />
     <Content Include="Scripts\Upper\upper-scrollpaging.js" />
     <Content Include="Scripts\Upper\upper-shorten.js" />
     <Content Include="Scripts\Upper\question-list.js" />
@@ -759,12 +762,10 @@
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Web.config" />
-    <Content Include="Views\Home\QuestionList.cshtml" />
     <Content Include="Views\Question\Index.cshtml" />
     <Content Include="Views\Shared\_QuestionDetail.cshtml" />
     <Content Include="Views\Shared\_AnswersDetail.cshtml" />
     <Content Include="Views\Shared\_NavBar.cshtml" />
-    <Content Include="Views\Home\View1.cshtml" />
     <Content Include="Views\Shared\_PostModal.cshtml" />
     <Content Include="Views\Home\DisplayTestResult.cshtml" />
     <Content Include="Views\Home\FileListPage.cshtml" />
@@ -810,8 +811,9 @@
     <Content Include="Views\Message\_MessagePartial.cshtml" />
     <Content Include="Views\Message\_NotificationPartial.cshtml" />
     <Content Include="Views\Message\_NotificationAllPartial.cshtml" />
-    <Content Include="Views\User\_UserTagList.cshtml" />
+    <Content Include="Views\Shared\_UserTagList.cshtml" />
     <Content Include="Views\Shared\_ConfirmDel.cshtml" />
+    <Content Include="Views\Home\SearchResults.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

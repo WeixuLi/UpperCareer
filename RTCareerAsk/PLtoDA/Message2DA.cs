@@ -20,14 +20,7 @@ namespace RTCareerAsk.PLtoDA
         {
             return await LCDal.LoadNotifications(userId, types, pageIndex).ContinueWith(t =>
                 {
-                    List<HistoryModel> ntfns = new List<HistoryModel>();
-
-                    foreach (History ntfn in t.Result.OrderByDescending(x => x.IsNew).ThenByDescending(x => x.DateCreate))
-                    {
-                        ntfns.Add(new HistoryModel(ntfn));
-                    }
-
-                    return ntfns;
+                    return t.Result != null && t.Result.Count() > 0 ? t.Result.Select(x => new HistoryModel(x)).ToList() : new List<HistoryModel>();
                 });
         }
 
@@ -35,14 +28,7 @@ namespace RTCareerAsk.PLtoDA
         {
             return await LCDal.LoadNotifications(types, pageIndex).ContinueWith(t =>
             {
-                List<HistoryModel> ntfns = new List<HistoryModel>();
-
-                foreach (History ntfn in t.Result.OrderByDescending(x => x.IsNew).ThenByDescending(x => x.DateCreate))
-                {
-                    ntfns.Add(new HistoryModel(ntfn));
-                }
-
-                return ntfns;
+                return t.Result != null && t.Result.Count() > 0 ? t.Result.Select(x => new HistoryModel(x)).ToList() : new List<HistoryModel>();
             });
         }
 
@@ -55,14 +41,7 @@ namespace RTCareerAsk.PLtoDA
         {
             return await LCDal.LoadMessagesForUser(userId).ContinueWith(t =>
                 {
-                    List<MessageModel> msgs = new List<MessageModel>();
-
-                    foreach (Message msg in t.Result)
-                    {
-                        msgs.Add(new MessageModel(msg));
-                    }
-
-                    return msgs;
+                    return t.Result != null && t.Result.Count() > 0 ? t.Result.Select(x => new MessageModel(x)).ToList() : new List<MessageModel>();
                 });
         }
 

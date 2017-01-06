@@ -228,6 +228,7 @@ namespace RTCareerAsk.Controllers
 
         [HttpPost]
         [AllowAnonymous]
+        [UpperJsonExceptionFilter]
         public async Task<PartialViewResult> UserManage(UserManageModel model)
         {
             try
@@ -251,6 +252,7 @@ namespace RTCareerAsk.Controllers
         }
 
         [HttpPost]
+        [UpperJsonExceptionFilter]
         public PartialViewResult QuickLoginForm(string returnUrl)
         {
             try
@@ -267,6 +269,7 @@ namespace RTCareerAsk.Controllers
         }
 
         [HttpPost]
+        [UpperJsonExceptionFilter]
         public PartialViewResult ForgetPasswordForm()
         {
             try
@@ -305,6 +308,7 @@ namespace RTCareerAsk.Controllers
         }
 
         [HttpPost]
+        [UpperJsonExceptionFilter]
         public async Task<PartialViewResult> ChangePortrait(HttpPostedFileBase portrait)
         {
             try

@@ -33,6 +33,7 @@
     }
     @Html.Raw(HttpUtility.HtmlDecode(Model.HasReference ? Model.Reference.Content : Model.Content))
 </div>
+@*<div id="hm_t_115241"></div>*@
 <div class="article-comments centered" data-target="@Model.ID">
     <div>
         @Html.Partial("_ArticleCommentForm", new RTCareerAsk.Models.ArticleCommentPostModel() { ArticleID = Model.ID })

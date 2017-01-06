@@ -75,6 +75,7 @@ namespace RTCareerAsk.Controllers
         }
 
         [HttpPost]
+        [UpperJsonExceptionFilter]
         public async Task<PartialViewResult> LoadNotificationsByType(int contentType, int pageIndex = 0)
         {
             try
@@ -111,6 +112,7 @@ namespace RTCareerAsk.Controllers
         }
 
         [HttpPost]
+        [UpperJsonExceptionFilter]
         public async Task<PartialViewResult> LoadAllNotificationsByType(int contentType, int pageIndex = 0)
         {
             try
@@ -148,6 +150,7 @@ namespace RTCareerAsk.Controllers
         }
 
         [HttpPost]
+        [UpperJsonExceptionFilter]
         public async Task MarkNotificationAsRead(string id)
         {
             try
@@ -162,6 +165,7 @@ namespace RTCareerAsk.Controllers
         }
 
         [HttpGet]
+        [UpperJsonExceptionFilter]
         public async Task<PartialViewResult> LoadMessageContent(string Id)
         {
             try
@@ -194,6 +198,7 @@ namespace RTCareerAsk.Controllers
 
         [UpperResult]
         [HttpPost]
+        [UpperJsonExceptionFilter]
         public async Task<PartialViewResult> UpdateMsgCount()
         {
             await UpdateNewMessageCount();
@@ -202,6 +207,7 @@ namespace RTCareerAsk.Controllers
         }
 
         [HttpPost]
+        [UpperJsonExceptionFilter]
         public PartialViewResult CreateLetterForm(string targetId)
         {
             try
@@ -229,6 +235,7 @@ namespace RTCareerAsk.Controllers
         }
 
         [HttpPost]
+        [UpperJsonExceptionFilter]
         public async Task WritePersonalLetter(LetterModel l)
         {
             try
@@ -255,6 +262,7 @@ namespace RTCareerAsk.Controllers
         }
 
         [HttpPost]
+        [UpperJsonExceptionFilter]
         public async Task DeleteMessage(string id)
         {
             try

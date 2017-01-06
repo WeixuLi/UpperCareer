@@ -26,6 +26,26 @@ namespace RTCareerAsk.PLtoDA
             return await LCDal.DownloadFileByID(fileId).ContinueWith(t => new FileModel(t.Result));
         }
 
+        public async Task<SearchResultModel> SearchStupid(string userId, string keyword)
+        {
+            SearchResult result = await LCDal.SearchByKeywordStupid(keyword);
+
+            result.UserResults = await UpdateUserSearchResults(userId, result.UserResults);
+
+            return new SearchResultModel(result);
+        }
+
+        public async Task<List<UserTag>> UpdateUserSearchResults(string userId, IEnumerable<UserTag> userSearchResults)
+        {
+            List<Task<UserTag>> tasks = new List<Task<UserTag>>();
+
+            tasks.AddRange(userSearchResults.Select(x => LCDal.BuildUserTag(userId, x)));
+
+            await Task.WhenAll(tasks.ToArray());
+
+            return tasks.Select(x => x.Result).ToList();
+        }
+
         #region Trunk
 
         //public async Task<List<QuestionInfoModel>> GetQuestionInfoModels(int id = 1)

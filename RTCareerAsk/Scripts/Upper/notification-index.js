@@ -1,4 +1,9 @@
-﻿function SetScrollPaging() {
+﻿function OnNotificationFailure(xhr) {
+    var json = $.parseJSON(xhr.responseText);
+    DisplayErrorInfo(json.errorMessage);
+}
+
+function SetScrollPaging() {
     $('.notification-list').upperscrollpaging('/Message/LoadNotificationsByType', {
         contentType: $('.tab-li.active-nav > a').attr('href').slice(-1),
         itemSelector: 'li.item'
@@ -28,6 +33,10 @@ $(document).ready(function () {
             contentType: 'application/json',
             success: function (response) {
                 MarkRead(item);
+            },
+            error: function (xhr) {
+                var json = $.parseJSON(xhr.responseText);
+                DisplayErrorInfo(json.errorMessage);
             }
         });
     });

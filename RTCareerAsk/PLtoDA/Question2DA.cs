@@ -31,14 +31,10 @@ namespace RTCareerAsk.PLtoDA
                     throw new IndexOutOfRangeException(string.Format("请求代码出错：{0}", id));
             }
 
-            List<QuestionInfoModel> qiList = new List<QuestionInfoModel>();
-
-            foreach (QuestionInfo q in await LCDal.LoadQuestionList(pageIndex, isHottestFirst))
-            {
-                qiList.Add(new QuestionInfoModel(q));
-            }
-
-            return qiList;
+            return await LCDal.LoadQuestionList(pageIndex, isHottestFirst).ContinueWith(t =>
+                {
+                    return t.Result != null && t.Result.Count() > 0 ? t.Result.Select(x => new QuestionInfoModel(x)).ToList() : new List<QuestionInfoModel>();
+                });
         }
 
         public async Task<List<AnswerInfoModel>> LoadAnswerListByPage(int pageIndex, int id = 3)
@@ -56,15 +52,10 @@ namespace RTCareerAsk.PLtoDA
                     throw new IndexOutOfRangeException(string.Format("请求代码出错：{0}", id));
             }
 
-            List<AnswerInfoModel> aiList = new List<AnswerInfoModel>();
-
-            foreach (AnswerInfo a in await LCDal.LoadAnswerList(pageIndex, isHottestFirst))
-            {
-                aiList.Add(new AnswerInfoModel(a));
-            }
-
-            return aiList;
-
+            return await LCDal.LoadAnswerList(pageIndex, isHottestFirst).ContinueWith(t =>
+                {
+                    return t.Result != null && t.Result.Count() > 0 ? t.Result.Select(x => new AnswerInfoModel(x)).ToList() : new List<AnswerInfoModel>();
+                });
         }
 
         public async Task<QuestionModel> GetQuestionModel(string userId, string questionId)
@@ -76,14 +67,7 @@ namespace RTCareerAsk.PLtoDA
         {
             return await LCDal.LoadQuestionList(0, false).ContinueWith(t =>
                 {
-                    List<QuestionInfoModel> qiList = new List<QuestionInfoModel>();
-
-                    foreach (QuestionInfo q in t.Result)
-                    {
-                        qiList.Add(new QuestionInfoModel(q));
-                    }
-
-                    return qiList;
+                    return t.Result != null && t.Result.Count() > 0 ? t.Result.Select(x => new QuestionInfoModel(x)).ToList() : new List<QuestionInfoModel>();
                 });
         }
 
@@ -96,17 +80,7 @@ namespace RTCareerAsk.PLtoDA
         {
             return await LCDal.LoadAnswersByQuestion(userId, questionId, pageIndex, isHottestFirst).ContinueWith(t =>
                 {
-                    List<AnswerModel> ansList = new List<AnswerModel>();
-
-                    if (t.Result != null && t.Result.Count() > 0)
-                    {
-                        foreach (Answer a in t.Result)
-                        {
-                            ansList.Add(new AnswerModel(a));
-                        }
-                    }
-
-                    return ansList;
+                    return t.Result != null && t.Result.Count() > 0 ? t.Result.Select(x => new AnswerModel(x)).ToList() : new List<AnswerModel>();
                 });
         }
 
@@ -114,14 +88,7 @@ namespace RTCareerAsk.PLtoDA
         {
             return await LCDal.FindCommentsByAnswer(answerId).ContinueWith(t =>
                 {
-                    List<CommentModel> cmtList = new List<CommentModel>();
-
-                    foreach (Comment c in t.Result)
-                    {
-                        cmtList.Add(new CommentModel(c));
-                    }
-
-                    return cmtList;
+                    return t.Result != null && t.Result.Count() > 0 ? t.Result.Select(x => new CommentModel(x)).ToList() : new List<CommentModel>();
                 });
         }
 
