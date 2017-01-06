@@ -38,6 +38,7 @@ namespace RTCareerAsk.Controllers
             try
             {
                 SearchResultModel result = await HomeDa.SearchStupid(HasUserInfo ? GetUserID() : null, keyword);
+                result.Keyword = keyword;
 
                 return View(result);
             }

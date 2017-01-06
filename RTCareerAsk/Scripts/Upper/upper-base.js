@@ -280,6 +280,17 @@ $(document).ready(function () {
         });
     })
 
+    $('#formSearch').submit(function (e) {
+
+        var form = $(e.delegateTarget),
+            keyword = form.find('input[type="text"]').val();
+
+        if (keyword.length == 0) {
+            e.preventDefault();
+            DisplaySuccessInfo('<strong style="font-size: 15px">请输入搜索关键词！</strong>');
+        }
+    })
+
     //Enable nav bar dropdown list with hover event.
     //$('ul.nav li.dropdown').hover(function () {
     //    $(this).find('.dropdown-menu').stop(true, true).delay(200).slideDown(200);

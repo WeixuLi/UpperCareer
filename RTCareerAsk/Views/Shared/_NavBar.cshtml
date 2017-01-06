@@ -29,11 +29,13 @@
                 <li class="@Html.IsSelected("Question")">@Html.ActionLink("问答", "Index", "Question")</li>
                 @*<li><a id="lnkFollowUs" href="#" data-toggle="popover" data-placement="bottom"><span class="glyphicon glyphicon-qrcode"></span>&nbsp;关注我们</a></li>*@
             </ul>
-            <form action="@Url.Action("SearchResults", "Home")" method="post" class="navbar-form navbar-left" role="search">
-                <div class="form-group">
+            <form id="formSearch" action="@Url.Action("SearchResults", "Home")" method="post" class="navbar-form navbar-left" role="search">
+                <div class="input-group">
                     <input type="text" name="keyword" class="form-control" placeholder="输入您的关键词，以空格分开">
+                    <span class="input-group-btn">
+                        <button type="submit" class="btn btn-link"><span class="glyphicon glyphicon-search"></span></button>
+                    </span>
                 </div>
-                <button type="submit" class="btn btn-link"><span class="glyphicon glyphicon-search"></span></button>
             </form>
             @*@Html.BeginForm("SearchResults", "Home", FormMethod.Post, new { @class = "navbar-form navbar-left" })
             {

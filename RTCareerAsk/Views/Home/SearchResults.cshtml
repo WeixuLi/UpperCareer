@@ -2,15 +2,15 @@
 
 @Html.HiddenFor(model => model.Keyword)
 <div style="max-width: 700px" class="centered clear-fix">
-    <h4>为您找到 @Model.ResultCount 条结果</h4>
-    <div id="divQuestionResults">
-        <h4>相关问题共 @Model.QuestionResults.Count 条</h4>
+    <h4 style="margin-left: 15px">为您找到<span class="marked-number">@Model.ResultCount</span>条与<span class="marked-number">@(Model.Keyword)</span>有关的结果</h4>
+    <div id="divQuestionResults" style="border-top: 1px solid #cccccc">
+        <h5 style="margin: 15px 15px -15px;">相关问题</h5>
         <div>
             @Html.Partial("_QuestionList", Model.QuestionResults)
         </div>
     </div>
-    <div id="divUserResults">
-        <h4>相关用户共 @Model.UserResults.Count 条</h4>
+    <div id="divUserResults" style="border-top: 1px solid #f1f1f1">
+        <h5 style="margin: 15px 15px -15px">相关用户</h5>
         <div>
             @Html.Partial("_UserTagList", Model.UserResults)
         </div>
