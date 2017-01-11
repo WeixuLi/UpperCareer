@@ -1,7 +1,7 @@
 ﻿@model List<RTCareerAsk.Models.AnswerInfoModel>
 
 <div class="content-info">
-    <ul class="list-group box" data-target="@(Model.Count > 0 ? Model.First().Creator.UserID : string.Empty)">
+    <ul class="list-group box" data-target="@(Model.Count > 0 ? Model.First().Creator.UserID : string.Empty)" data-type="2">
         @foreach (RTCareerAsk.Models.AnswerInfoModel a in Model)
         {
             <li class="list-group-item">
@@ -23,21 +23,3 @@
         }
     </ul>
 </div>
-<script type="text/javascript">
-    $(document).ready(function () {
-        var url = '@Url.Action("RecentRecord", "User")';
-
-        Resize();
-        $('li>.list-group-item-text').uppershorten();
-
-        $('ul.list-group').upperscrollpaging(url, {
-            itemSelector: 'li.list-group-item',
-            contentType: 2,
-            targetId: $('ul.list-group').data('target'),
-            postAction: function () {
-                Resize();
-                $('li>.list-group-item-text').uppershorten();
-            }
-        });
-    });
-</script>

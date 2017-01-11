@@ -3,10 +3,53 @@
     DisplayErrorInfo(json.errorMessage);
 }
 
-function OnUpdateContentComplete() { }
+function OnUpdateContentComplete() {
+    BindScrollPaging();
+}
+
+function AfterUserAnswersLoad() {
+    Resize();
+    $('li>.list-group-item-text').uppershorten();
+}
+
+function BindScrollPaging() {
+    var contentTypeId = $('ul.list-group').data('type'),
+        isOnRecords = contentTypeId == 1 || contentTypeId == 2;
+
+    if (isOnRecords) {
+        if (contentTypeId == 1) {
+            $(document).ready(function () {
+                $('ul.list-group').upperscrollpaging(loadUserRecords, {
+                    itemSelector: 'li.list-group-item',
+                    contentType: $('ul.list-group').data('type'),
+                    targetId: $('ul.list-group').data('target')
+                });
+            });
+        }
+        else {
+            AfterUserAnswersLoad();
+
+            $('ul.list-group').upperscrollpaging(loadUserRecords, {
+                itemSelector: 'li.list-group-item',
+                contentType: $('ul.list-group').data('type'),
+                targetId: $('ul.list-group').data('target'),
+                postAction: AfterUserAnswersLoad
+            });
+        }
+    }
+    else {
+        $('ul.list-group').upperscrollpaging(loadFollowInfo, {
+            itemSelector: 'li.list-group-item',
+            contentType: $('ul.list-group').data('type'),
+            targetId: $('ul.list-group').data('target')
+        });
+    }
+}
 
 $(document).ready(function () {
     $('.upper-tab').uppertabs();
+
+    BindScrollPaging();
 
     $(document).on('click', '.user-detail .action > button', function (e) {
         e.preventDefault();

@@ -227,7 +227,7 @@ namespace RTCareerAsk.DAL.Tests
             string userId = "578a84278ac24700608b9f21";
             string messageId = "578f4ea10a2b58006869235f";
 
-            Assert.IsTrue(await LCDal.MarkMessageAsOpened(userId, messageId));
+            Assert.IsTrue(await LCDal.MarkMessageAsRead(userId, messageId));
         }
 
         [TestMethod]
@@ -443,7 +443,7 @@ namespace RTCareerAsk.DAL.Tests
             string keyword = "工作";
             SearchType type = (SearchType)1;
 
-            SearchResult result = await LCDal.ExtendedSearchByKeywordStupid(keyword, type);
+            SearchResult result = await LCDal.ExtendedSearchByKeywordStupid(keyword, type, 0);
 
             Assert.AreEqual(type, result.ResultType);
             Assert.AreEqual(28, result.QuestionResults.Count);
@@ -587,7 +587,7 @@ namespace RTCareerAsk.DAL.Tests
         [TestMethod]
         public async Task SearchEngineSimpleTst()
         {
-            string keyword = "工作 影响";
+            string keyword = "l w";
 
             SearchResult result = await LCDal.SearchEngineSimple(keyword.Split(' '));
 

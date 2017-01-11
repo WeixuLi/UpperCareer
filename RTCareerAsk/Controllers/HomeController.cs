@@ -5,6 +5,7 @@ using System.Web;
 using System.Web.Mvc;
 using System.Threading.Tasks;
 using System.IO;
+using RTCareerAsk.App_DLL;
 using RTCareerAsk.Models;
 using RTCareerAsk.PLtoDA;
 using RTCareerAsk.Filters;
@@ -31,16 +32,45 @@ namespace RTCareerAsk.Controllers
             }
         }
 
-        [HttpPost]
         [UpperResult]
         public async Task<ActionResult> SearchResults(string keyword)
         {
             try
             {
+                keyword = keyword == MasterSearchKey ? "" : keyword;
+
                 SearchResultModel result = await HomeDa.SearchStupid(HasUserInfo ? GetUserID() : null, keyword);
-                result.Keyword = keyword;
+                result.Keyword = string.IsNullOrEmpty(keyword) ? MasterSearchKey : keyword;
 
                 return View(result);
+            }
+            catch (Exception e)
+            {
+                while (e.InnerException != null) e = e.InnerException;
+                throw e;
+            }
+        }
+
+        [HttpPost]
+        [UpperJsonExceptionFilter]
+        public async Task<PartialViewResult> ExtendSearchResult(string keyword, SearchModelType type, int pageIndex)
+        {
+            try
+            {
+                keyword = keyword == MasterSearchKey ? "" : keyword;
+
+                SearchResultModel result = await HomeDa.ExtendSearchResult(HasUserInfo ? GetUserID() : null, keyword, type, pageIndex);
+                result.Keyword = string.IsNullOrEmpty(keyword) ? MasterSearchKey : keyword;
+
+                switch (type)
+                {
+                    case SearchModelType.Question:
+                        return PartialView("_QuestionList", result.QuestionResults);
+                    case SearchModelType.User:
+                        return PartialView("_UserTagList", result.UserResults);
+                    default:
+                        throw new IndexOutOfRangeException("错误：不能识别的搜索类型。");
+                }
             }
             catch (Exception e)
             {

@@ -157,7 +157,7 @@ function RemoveHtml(originString) {
 function TriggerLoginModal() {
     var data = new Object();
 
-    data.returnUrl = window.location.pathname;
+    data.returnUrl = window.location.href;
 
     $.ajax({
         type: "POST",
@@ -176,6 +176,11 @@ function TriggerLoginModal() {
     });
 }
 
+function AnimatedListDisplay(listItems) {
+    listItems.hide().each(function (i) {
+        $(this).delay(i * 50).fadeIn(200);
+    });
+}
 //function RequestForDelete(data) {
 //    var config = new Object()
 //    {

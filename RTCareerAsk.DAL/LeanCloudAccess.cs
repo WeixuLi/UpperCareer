@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace RTCareerAsk.DAL
@@ -2173,7 +2174,7 @@ namespace RTCareerAsk.DAL
         /// <param name="userId">用户ID</param>
         /// <param name="messageId">消息ID</param>
         /// <returns></returns>
-        public async Task<bool> MarkMessageAsOpened(string userId, string messageId)
+        public async Task<bool> MarkMessageAsRead(string userId, string messageId)
         {
             AVObject message = await AVObject.GetQuery("Message").Include("to").Include("from").Include("content").GetAsync(messageId);
 
@@ -2681,8 +2682,8 @@ namespace RTCareerAsk.DAL
 
         public async Task<SearchResult> SearchByKeywordStupid(string keyword)
         {
-            int resultLimitPerCategory = 1000;
-            string regexStr = ParseSearchConditionRegex(keyword);
+            int resultLimitPerCategory = 10;
+            Regex regexStr = new Regex(ParseSearchConditionRegex(keyword), RegexOptions.ECMAScript);
 
             List<Task<IEnumerable<AVObject>>> searchTasks = new List<Task<IEnumerable<AVObject>>>();
             List<AVObject> searchResults = new List<AVObject>();
@@ -2727,42 +2728,51 @@ namespace RTCareerAsk.DAL
             return new SearchResult(searchResults);
         }
 
-        public async Task<SearchResult> ExtendedSearchByKeywordStupid(string keyword, SearchType type)
+        public async Task<SearchResult> ExtendedSearchByKeywordStupid(string keyword, SearchType type, int pageIndex)
         {
-            int resultLimitPerCategory = 5;
+            int resultLimitPerCategory = 10;
+            int pageCapacity = 1000;
             string regexStr = ParseSearchConditionRegex(keyword);
-
-            AVQuery<AVObject> query = new AVQuery<AVObject>("Answer");
 
             switch (type)
             {
                 case SearchType.Question:
-                    query = AVObject.GetQuery("Post")
+                    return await AVObject.GetQuery("Post")
                         .WhereMatches("title", regexStr)
                         .Include("createdBy")
                         .OrderByDescending("voteDiff")
-                        .ThenByDescending("subPostCount");
-                    break;
+                        .ThenByDescending("subPostCount")
+                        .Skip(pageIndex == 0 ? resultLimitPerCategory : pageIndex * pageCapacity)
+                        .Limit(pageCapacity)
+                        .FindAsync()
+                        .ContinueWith(t =>
+                            {
+                                if (t.IsFaulted || t.IsCanceled)
+                                {
+                                    throw t.Exception;
+                                }
+
+                                return new SearchResult(t.Result);
+                            }); ;
                 case SearchType.User:
-                    query = AVObject.GetQuery("_User")
-                        .WhereMatches("nickname", regexStr);
-                    break;
+                    return await AVUser.Query
+                        .WhereMatches("nickname", regexStr)
+                        .Skip(pageIndex == 0 ? resultLimitPerCategory : pageIndex * pageCapacity)
+                        .Limit(pageCapacity)
+                        .FindAsync()
+                        .ContinueWith(t =>
+                            {
+                                if (t.IsFaulted || t.IsCanceled)
+                                {
+                                    throw t.Exception;
+                                }
+
+                                return new SearchResult(t.Result);
+                            });
+                    ;
                 default:
                     throw new IndexOutOfRangeException("错误：不能识别的搜索类型。");
             }
-
-            return await query
-                .Skip(resultLimitPerCategory)
-                .FindAsync()
-                .ContinueWith(t =>
-                {
-                    if (t.IsFaulted || t.IsCanceled)
-                    {
-                        throw t.Exception;
-                    }
-
-                    return new SearchResult(t.Result, type);
-                });
         }
         #endregion
 
@@ -3176,6 +3186,12 @@ namespace RTCareerAsk.DAL
                 regexStr += string.Format("(?=.*?{0})", keyword);
             }
 
+            AVQuery<AVObject> query = AVObject.GetQuery("Post")
+                //.WhereMatches("title", regexStr)
+                .WhereContains("title", keywords[0])
+                .OrderByDescending("voteDiff")
+                .ThenByDescending("subPostCount");
+
             return await AVObject.GetQuery("Post")
                 //.WhereMatches("title", regexStr)
                 .WhereContains("title", keywords[0])
@@ -3392,10 +3408,19 @@ namespace RTCareerAsk.DAL
         private string ParseSearchConditionRegex(string keyword)
         {
             string[] keywords = keyword.Split(' ');
-            string regexStr = "";
-            foreach (string key in keywords)
+            string regexStr = "(";
+
+            for (int i = 0; i < keywords.Length; i++)
             {
-                regexStr += string.Format("(?=.*?{0})", key);
+                regexStr += keywords[i];
+                if (i == keywords.Length - 1)
+                {
+                    regexStr += ")";
+                }
+                else
+                {
+                    regexStr += "|";
+                }
             }
 
             return regexStr;

@@ -47,6 +47,10 @@ namespace RTCareerAsk
                         "~/Scripts/Upper/upper-shorten.js"
                         ));
 
+            bundles.Add(new ScriptBundle("~/bundles/search").Include(
+                        "~/Scripts/Upper/search-result*"
+                        ));
+
             bundles.Add(new ScriptBundle("~/bundles/message").Include(
                         "~/Scripts/Upper/upper-scrollpaging.js",
                         "~/Scripts/Upper/upper-tabs.js",

@@ -15,21 +15,20 @@ function OnUpdateContentBegin(xhr, settings) {
     return true;
 }
 
+function OnUpdateSortingFailure(xhr) {
+    var json = $.parseJSON(xhr.responseText);
+    DisplayErrorInfo(json.errorMessage);
+}
+
 function OnUpdateContentFailure(xhr) {
     var json = $.parseJSON(xhr.responseText);
     DisplayErrorInfo(json.errorMessage);
 }
 
 function OnUpdateListComplete() {
-    var qLst = $('#divQuestionList > .content-info > .box').children('div'),
-        length = qLst.length,
-        i = 0,
-        showList = function () {
-            qLst.eq(i).fadeIn(200)
-        };
-    qLst.hide().each(function (i) {
-        $(this).delay(i * 50).fadeIn(200);
-    });
+    AnimatedListDisplay($('#divQuestionList li'));
+
+    BindScrollPaging();
 }
 
 function GetContentTypeId() {
@@ -39,26 +38,53 @@ function GetContentTypeId() {
     return (index + indexBase);
 }
 
-function ResizeCarousel() {
-    var windowWidth = $(window).width(),
-        sectionWidth = $('.featured-section').width(),
-        left = $('.featured-section>.left');
-
-    if (windowWidth > 700) {
-        left.width(sectionWidth * 0.7);
-    }
-    else {
-        left.width(sectionWidth);
-    }
-
-    left.height(left.width() * 0.5625);
+function AfterAnswerListLoad() {
+    Resize();
+    $('.list-group-item > .section-wrap > .text > div').uppershorten();
+    $('.brief').css('margin', 0);
 }
 
+function BindScrollPaging() {
+    var contentTypeId = GetContentTypeId(),
+        isOnQuestions = contentTypeId == 1 || contentTypeId == 2;
+
+    if (isOnQuestions) {
+        $('.content-info').upperscrollpaging(loadListUpdate, {
+            contentType: contentTypeId
+        });
+    }
+    else {
+        AfterAnswerListLoad();
+        $('.content-info').upperscrollpaging(loadListUpdate, {
+            contentType: contentTypeId,
+            postAction: AfterAnswerListLoad
+        });
+    }
+}
+
+//function ResizeCarousel() {
+//    var windowWidth = $(window).width(),
+//        sectionWidth = $('.featured-section').width(),
+//        left = $('.featured-section>.left');
+
+//    if (windowWidth > 700) {
+//        left.width(sectionWidth * 0.7);
+//    }
+//    else {
+//        left.width(sectionWidth);
+//    }
+
+//    left.height(left.width() * 0.5625);
+//}
+
 $(document).ready(function () {
-    ResizeCarousel();
+    //ResizeCarousel();
     $('.upper-tab').uppertabs();
+
+    AnimatedListDisplay($('#divQuestionList li'));
+    BindScrollPaging();
 });
 
 $(window).resize(function () {
-    ResizeCarousel();
+    //ResizeCarousel();
 });

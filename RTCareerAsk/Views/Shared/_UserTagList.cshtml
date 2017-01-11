@@ -33,15 +33,3 @@
         }
     </ul>
 </div>
-
-<script type="text/javascript">
-    var url = '@Url.Action("FollowersOrFollowees", "User")';
-
-    $(document).ready(function () {
-        $('ul.list-group').upperscrollpaging(url, {
-            itemSelector: 'li.list-group-item',
-            contentType: $('ul.list-group').data('type'),
-            targetId: $('ul.list-group').data('target')
-        });
-    });
-</script>

@@ -672,12 +672,12 @@
     <None Include="Properties\PublishProfiles\Host.pubxml" />
     <None Include="Properties\PublishProfiles\QCloud.pubxml" />
     <None Include="Scripts\jquery-1.9.1.intellisense.js" />
+    <Content Include="Images\defaultPortrait.png" />
     <Content Include="Images\error.png" />
     <Content Include="Images\QRCode.png" />
     <Content Include="Images\spin.gif" />
     <Content Include="Images\post.png" />
     <Content Include="Images\notification.png" />
-    <Content Include="Images\defaultPortrait.png" />
     <Content Include="Images\upper-logo.ico" />
     <Content Include="Images\wx_pic.png" />
     <Content Include="Scripts\Blob.js" />
@@ -705,6 +705,7 @@
     <Content Include="Scripts\Upper\login.js" />
     <Content Include="Scripts\Upper\notification-all.js" />
     <Content Include="Scripts\Upper\notification-index.js" />
+    <Content Include="Scripts\Upper\search-result.js" />
     <Content Include="Scripts\Upper\upper-article-detail.js" />
     <Content Include="Scripts\Upper\upper-confirmdialog.js" />
     <Content Include="Scripts\Upper\upper-scrollpaging.js" />

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Threading.Tasks;
+using RTCareerAsk.App_DLL;
 using RTCareerAsk.Models;
 using RTCareerAsk.DAL;
 using RTCareerAsk.DAL.Domain;
@@ -35,15 +36,29 @@ namespace RTCareerAsk.PLtoDA
             return new SearchResultModel(result);
         }
 
+        public async Task<SearchResultModel> ExtendSearchResult(string userId, string keyword, SearchModelType type, int pageIndex)
+        {
+            SearchResult result = await LCDal.ExtendedSearchByKeywordStupid(keyword, (SearchType)type, pageIndex);
+
+            result.UserResults = await UpdateUserSearchResults(userId, result.UserResults);
+
+            return new SearchResultModel(result);
+        }
+
         public async Task<List<UserTag>> UpdateUserSearchResults(string userId, IEnumerable<UserTag> userSearchResults)
         {
-            List<Task<UserTag>> tasks = new List<Task<UserTag>>();
+            if (userSearchResults.Count() > 0)
+            {
+                List<Task<UserTag>> tasks = new List<Task<UserTag>>();
 
-            tasks.AddRange(userSearchResults.Select(x => LCDal.BuildUserTag(userId, x)));
+                tasks.AddRange(userSearchResults.Select(x => LCDal.BuildUserTag(userId, x)));
 
-            await Task.WhenAll(tasks.ToArray());
+                await Task.WhenAll(tasks.ToArray());
 
-            return tasks.Select(x => x.Result).ToList();
+                return tasks.Select(x => x.Result).OrderByDescending(x => x.AnswerCount).ThenByDescending(x => x.FollowerCount).ToList();
+            }
+
+            return new List<UserTag>();
         }
 
         #region Trunk

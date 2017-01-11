@@ -21,7 +21,7 @@ namespace RTCareerAsk.BL
 
         public static async Task<bool> MarkMessageAsOpened(string userId, string messageId)
         {
-            return await LCDal.MarkMessageAsOpened(userId,messageId);
+            return await LCDal.MarkMessageAsRead(userId,messageId);
         }
 
         public static async Task<bool> DeleteMessage(string userId, string messageId)

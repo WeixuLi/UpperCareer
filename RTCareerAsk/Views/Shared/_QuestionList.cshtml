@@ -1,10 +1,10 @@
 ﻿@model IEnumerable<RTCareerAsk.Models.QuestionInfoModel>
 
 <div class="content-info">
-    <div class="list-group box">
+    <ul class="list-group box">
         @foreach (RTCareerAsk.Models.QuestionInfoModel q in Model)
         {
-            <div class="list-group-item">
+            <li class="list-group-item">
                 <div class="section-wrap">
                     <div class="section number">
                         <span class="marked-number">@q.VoteDiff</span>
@@ -19,16 +19,7 @@
                         @Html.UpperAuthor(q.Creator.Name, q.CreateBefore)
                     </div>
                 </div>
-            </div>
+            </li>
         }
-    </div>
+    </ul>
 </div>
-<script type="text/javascript">
-    var url = '@Url.Action("LoadContentUpdate", "Question")';
-
-    $(document).ready(function () {
-        $('.content-info').upperscrollpaging(url, {
-            contentType: GetContentTypeId()
-        });
-    });
-</script>

@@ -29,11 +29,11 @@
                 <li class="@Html.IsSelected("Question")">@Html.ActionLink("问答", "Index", "Question")</li>
                 @*<li><a id="lnkFollowUs" href="#" data-toggle="popover" data-placement="bottom"><span class="glyphicon glyphicon-qrcode"></span>&nbsp;关注我们</a></li>*@
             </ul>
-            <form id="formSearch" action="@Url.Action("SearchResults", "Home")" method="post" class="navbar-form navbar-left" role="search">
+            <form id="formSearch" action="@Url.Action("SearchResults", "Home")" method="get" class="navbar-form navbar-left" role="search">
                 <div class="input-group">
-                    <input type="text" name="keyword" class="form-control" placeholder="输入您的关键词，以空格分开">
+                    <input type="text" name="keyword" class="form-control" style="font-size: 13px; min-width: 200px; -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px" placeholder="输入您感兴趣的关键词">
                     <span class="input-group-btn">
-                        <button type="submit" class="btn btn-link"><span class="glyphicon glyphicon-search"></span></button>
+                        <button type="submit" class="btn btn-link" style="padding: 3px 12px"><span class="glyphicon glyphicon-search"></span></button>
                     </span>
                 </div>
             </form>
@@ -44,11 +44,12 @@
             </div>
             <button type="submit" class="btn btn-default">Submit</button>
             }*@
-            <div id="divWechatQR" style="display: none">
+            @*<div id="divWechatQR" style="display: none">
                 <div style="overflow: auto; max-width: 500px; height: auto">
                     <img src="/Images/QRCode.png" alt="" style="max-width: 500px; height: auto" />
                 </div>
-            </div>@*<li><a href="#" id="btnBugReport" data-toggle="modal" data-target="#divModal">报错 <span class="sr-only">(current)</span></a></li>*@
+            </div>*@
+            @*<li><a href="#" id="btnBugReport" data-toggle="modal" data-target="#divModal">报错 <span class="sr-only">(current)</span></a></li>*@
             @if (IsAuthorized)
             {
                 <ul class="nav navbar-nav navbar-right">
@@ -72,36 +73,43 @@
                                 <li class="@Html.IsSelected("Test")">@Html.ActionLink("报告列表", "Index", "Test")</li>
                                 <li class="divider"></li>
                             }
-                            <li>@Html.ActionLink("个人主页", "Index", "User", new { id = um.UserID }, new { })</li>
-                            <li>@Html.ActionLink("个人设置", "UserManage", "Account")</li>
-                            <li>@Html.ActionLink("登出", "LogOff", "Account")</li>
+                            <li><a href="@Url.Action("Index", "User", new { id = um.UserID })"><span class="glyphicon glyphicon-user"></span>&nbsp;&nbsp;个人主页</a></li>
+                            <li><a href="@Url.Action("UserManage", "Account")"><span class="glyphicon glyphicon-cog"></span>&nbsp;&nbsp;个人设置</a></li>
+                            <li><a href="@Url.Action("LogOff", "Account")"><span class="glyphicon glyphicon-off"></span>&nbsp;&nbsp;退出登录</a></li>
                         </ul>
 
                     </li>
                     <li class="@Html.IsSelected("Message", "Index")">
-                        <a href="@Url.Action("Index", "Message")" style="padding:10.5px 15px">
-                            <span data-toggle="tooltip" data-placement="bottom" title="消息">
+                        <a href="@Url.Action("Index", "Message")">
+                            @*<span data-toggle="tooltip" data-placement="bottom" title="消息">
                                 <img src="~/Images/notification.png" alt="" class="nav-img" />
                                 @if (um.NewMessageCount > 0)
                                 {
                                     <span id="spnNewMsgCnt" class="badge">@(um.NewMessageCount)</span>
                                 }
-                            </span>
+                            </span>*@
+                            <span class="glyphicon glyphicon-bell "></span>&nbsp;&nbsp;消息
+                            @if (um.NewMessageCount > 0)
+                            {
+                                <span id="spnNewMsgCnt" class="badge">@(um.NewMessageCount)</span>
+                            }
                             <span class="sr-only">(current)</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" id="btnPostQuestion" data-toggle="modal" data-target="#divModal" style="padding: 10.5px 15px">
-                            <span data-toggle="tooltip" data-placement="bottom" title="提问" />
-                            <img src="~/Images/post.png" alt="" class="nav-img" />
+                        <a href="#" id="btnPostQuestion" data-toggle="modal" data-target="#divModal">
+                            @*<span data-toggle="tooltip" data-placement="bottom" title="提问" />
+                            <img src="~/Images/post.png" alt="" class="nav-img" />*@
+                            <span class="glyphicon glyphicon-edit"></span>&nbsp;&nbsp;提问
                         </a>
                     </li>
                     @if (IsAdmin)
                     {
                         <li>
-                            <a href="#" id="btnBugReport" data-toggle="modal" data-target="#divModal" style="padding: 10.5px 15px">
-                                <span data-toggle="tooltip" data-placement="bottom" title="报错" />
-                                <img src="~/Images/error.png" alt="" class="nav-img" />
+                            <a href="#" id="btnBugReport" data-toggle="modal" data-target="#divModal">
+                                @*<span data-toggle="tooltip" data-placement="bottom" title="报错" />
+                                <img src="~/Images/error.png" alt="" class="nav-img" />*@
+                                <span class="glyphicon glyphicon-exclamation-sign"></span>&nbsp;&nbsp;报错
                             </a>
                         </li>
                     }
@@ -110,7 +118,7 @@
             else
             {
                 <ul class="nav navbar-nav navbar-right">
-                    <li class="@Html.IsSelected("Account", "Login")">@Html.ActionLink("登录 / 注册", "Login", "Account", new { returnUrl = Request.Url.AbsolutePath }, new { })</li>
+                    <li class="@Html.IsSelected("Account", "Login")">@Html.ActionLink("登录 / 注册", "Login", "Account", new { returnUrl = Request.Url.AbsoluteUri}, new { })</li>
                 </ul>                
             }
         </div>
@@ -130,7 +138,7 @@
     </div>
 </div>
 <div id="divInfoError" class="alert-tag" style="display: none">
-    <div class="alert alert-dismissible alert-danger">
+    <div class="alert alert-dismissible alert-warning">
         <button type="button" class="close">&times;</button>
         <p></p>
     </div>

@@ -27,6 +27,7 @@ namespace RTCareerAsk.Controllers
 
         private string TitleMark { get { return "UpperCareer尚职"; } }
         protected string GeneralTitle { get { return "UpperCareer尚职 - 真实的职场知识、经验、见解分享社区"; } }
+        protected string MasterSearchKey { get { return "axiaolaimao1017"; } }
 
         protected Home2DA HomeDa { get { return new Home2DA(); } }
         protected Account2DA AccountDa { get { return new Account2DA(); } }

@@ -127,6 +127,14 @@ a {
     margin: 0 15px;
 }
 
+.search-result {
+}
+
+    .search-result .keyword {
+        color: #70BF40;
+        font-weight: bold;
+    }
+
 .content-info {
     background-color: #ffffff;
 }
@@ -570,10 +578,10 @@ a {
     .answer .info-group {
         padding: 0 0px;
         display: flex;
-        -ms-flex-flow: row;
-        -webkit-flex-flow: row;
-        flex-flow: row;
-        align-items: center;
+        -ms-flex-flow: row wrap-reverse;
+        -webkit-flex-flow: row wrap-reverse;
+        flex-flow: row wrap-reverse;
+        align-items: baseline;
         justify-content: space-between;
     }
 

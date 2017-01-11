@@ -90,7 +90,7 @@ namespace RTCareerAsk.Controllers
                 {
                     await AccountLogin(model);
 
-                    return RedirectToLocal(returnUrl);
+                    return Redirect(returnUrl);
                 }
                 catch (Exception e)
                 {
