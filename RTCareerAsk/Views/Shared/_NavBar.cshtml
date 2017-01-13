@@ -11,8 +11,8 @@
     }
 }
 
-<nav class="navbar navbar-default">
-    <div class="container-fluid container">
+<nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
         <div class="navbar-header">
             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-2">
                 <span class="sr-only">Toggle navigation</span>
@@ -20,7 +20,13 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a href="@Url.Action("Index", "Home")" class="navbar-brand"><strong>upper<span style="color: #70BF40">career</span></strong></a>
+            <a href="@Url.Action("Index", "Home")" class="navbar-brand" style="display: flex;align-items: center">
+                @*<strong>尚<span style="color: #70BF40">职</span></strong>
+                &nbsp;
+                @Html.UpperPortrait("/Images/wx_pic.png", PortraitSize.Small)
+                &nbsp;*@
+                <strong>upper<span style="color: #70BF40">career</span></strong>
+            </a>
             @Html.Hidden("UserID", um.UserID, new { id = "hdnUserID" })
         </div>
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-2">
@@ -37,19 +43,11 @@
                     </span>
                 </div>
             </form>
-            @*@Html.BeginForm("SearchResults", "Home", FormMethod.Post, new { @class = "navbar-form navbar-left" })
-            {
-            <div class="form-group">
-                <input type="text" name="keyword" class="form-control" placeholder="Search">
-            </div>
-            <button type="submit" class="btn btn-default">Submit</button>
-            }*@
             @*<div id="divWechatQR" style="display: none">
                 <div style="overflow: auto; max-width: 500px; height: auto">
                     <img src="/Images/QRCode.png" alt="" style="max-width: 500px; height: auto" />
                 </div>
             </div>*@
-            @*<li><a href="#" id="btnBugReport" data-toggle="modal" data-target="#divModal">报错 <span class="sr-only">(current)</span></a></li>*@
             @if (IsAuthorized)
             {
                 <ul class="nav navbar-nav navbar-right">
@@ -118,30 +116,31 @@
             else
             {
                 <ul class="nav navbar-nav navbar-right">
-                    <li class="@Html.IsSelected("Account", "Login")">@Html.ActionLink("登录 / 注册", "Login", "Account", new { returnUrl = Request.Url.AbsoluteUri}, new { })</li>
+                    <li class="@Html.IsSelected("Account", "Login")">@Html.ActionLink("登录 / 注册", "Login", "Account", new { returnUrl = Request.Url.AbsoluteUri }, new { })</li>
                 </ul>                
             }
         </div>
     </div>
 </nav>
 
-<div id="divInfoLoading" class="alert-tag" style="display: none">
-    <div class="alert alert-dismissible alert-info">
-        <button type="button" class="close">&times;</button>
-        <p>显示些没用的……</p>
+<div style="margin-top: 45px; position: fixed; width: 100%; z-index: 1030">
+    <div id="divInfoLoading" class="alert-tag" style="display: none">
+        <div class="alert alert-dismissible alert-info">
+            <button type="button" class="close">&times;</button>
+            <p>显示些没用的……</p>
+        </div>
+    </div>
+    <div id="divInfoSuccess" class="alert-tag" style="display: none">
+        <div class="alert alert-dismissible alert-success">
+            <button type="button" class="close">&times;</button>
+            <p>Well done!</p>
+        </div>
+    </div>
+    <div id="divInfoError" class="alert-tag" style="display: none">
+        <div class="alert alert-dismissible alert-warning">
+            <button type="button" class="close">&times;</button>
+            <p></p>
+        </div>
     </div>
 </div>
-<div id="divInfoSuccess" class="alert-tag" style="display: none">
-    <div class="alert alert-dismissible alert-success">
-        <button type="button" class="close">&times;</button>
-        <p>Well done!</p>
-    </div>
-</div>
-<div id="divInfoError" class="alert-tag" style="display: none">
-    <div class="alert alert-dismissible alert-warning">
-        <button type="button" class="close">&times;</button>
-        <p></p>
-    </div>
-</div>
-
 <script src="~/Scripts/Upper/bug-report.js"></script>

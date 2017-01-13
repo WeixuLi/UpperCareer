@@ -4,14 +4,14 @@
 <div style="max-width: 700px" class="centered clear-fix search-result">
     <h4 style="margin-left: 15px">为您找到<span class="marked-number">@Model.ResultCount</span>条与<span class="marked-number">@(Model.Keyword)</span>有关的结果</h4>
     <p style="border-top: 1px solid #cccccc"></p>
-    <div id="divQuestionResults">
+    <div id="divQuestionResults" data-targetId="@Model.Keyword" data-contentType="1">
         <h5 style="margin: 15px 15px 15px"><span class="glyphicon glyphicon-list-alt"></span>&nbsp;&nbsp;相关问题</h5>
         <div style="border-top: 1px solid #f1f1f1">
             @Html.Partial("_QuestionList", Model.QuestionResults)
             @if (Model.QuestionResults.Count == 10)
             {
                 <div class="page-end">
-                    @Ajax.ActionLink("查看更多此项目结果", "ExtendSearchResult", "Home", new { keyword = Model.Keyword, type = SearchModelType.Question, pageIndex = 0 }, new AjaxOptions
+                    @Ajax.ActionLink("查看更多此项目结果", "ExtendSearchResult", "Home", new { targetId = Model.Keyword, contentType = SearchModelType.Question, pageIndex = 0 }, new AjaxOptions
                {
                    HttpMethod = "Post",
                    OnBegin = "OnExtendResultsBegin(divQuestionResults)",
@@ -26,14 +26,14 @@
             }
         </div>
     </div>
-    <div id="divUserResults">
+    <div id="divUserResults" data-targetId="@Model.Keyword" data-contentType="2">
         <h5 style="margin: 15px 15px 15px"><span class="glyphicon glyphicon-user"></span>&nbsp;&nbsp;相关用户</h5>
         <div style="border-top: 1px solid #f1f1f1">
             @Html.Partial("_UserTagList", Model.UserResults)
             @if (Model.UserResults.Count == 10)
             {
                 <div class="page-end">
-                    @Ajax.ActionLink("查看更多此项目结果", "ExtendSearchResult", "Home", new { keyword = Model.Keyword, type = SearchModelType.User, pageIndex = 0 }, new AjaxOptions
+                    @Ajax.ActionLink("查看更多此项目结果", "ExtendSearchResult", "Home", new { targetId = Model.Keyword, contentType = SearchModelType.User, pageIndex = 0 }, new AjaxOptions
                {
                    HttpMethod = "Post",
                    OnBegin = "OnExtendResultsBegin(divUserResults)",

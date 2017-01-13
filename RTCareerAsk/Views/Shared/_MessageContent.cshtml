@@ -1,11 +1,13 @@
 ﻿@model RTCareerAsk.Models.MessageModel
 
 @{
-    bool isFromSystem = Model.From == null;
+    bool isFromSystem = Model.Content.IsSystem;
+    bool isFromSelf = Model.From.UserID == ViewBag.UserId;
 }
+
 @Html.HiddenFor(model => model.MessageID, new { id = "hdnMsgID" })
 <div class="message-body">
-    <h4>@Model.Content.Title</h4>
+    @*<h4>@Model.Content.Title</h4>
     <small>来自：
     @if (isFromSystem)
     {
@@ -15,16 +17,16 @@
     {
         <a href="@Url.Action("Index", "User", new { id = Model.From.UserID })">@Model.From.Name</a>
     }
-    </small>
+    </small>*@
     <div class="float-right">
-        @if (!isFromSystem && !ViewBag.IsFromSelf)
+        @if (!isFromSystem && !isFromSelf)
         {
             <a href="#" id="btnWriteLetter" data-id="@Model.From.UserID" data-toggle="modal" data-target="#divModal"><span class="glyphicon glyphicon-share-alt icon" aria-hidden="true" data-toggle="tooltip" data-placement="bottom" title="回复" /></a>
         }
-        <a href="#" id="btnDeleteMsg" class="glyphicon glyphicon-trash icon" aria-hidden="true" data-id="@Model.MessageID" data-type="3" data-toggle="modal" data-target="#divModalSm" title="删除"></a>
+        <a href="#" id="@string.Format("btnDeleteMsg{0}", Model.MessageID)" class="glyphicon glyphicon-trash icon" aria-hidden="true" data-id="@Model.MessageID" data-type="3" data-toggle="modal" data-target="#divModalSm" title="删除"></a>
     </div>
     <div class="divider"></div>
-    <div>
-        <p>@Model.Content.Content</p>
+    <div id="divMsgContent">
+        @Html.Raw(HttpUtility.HtmlDecode(Model.Content.Content))
     </div>
 </div>

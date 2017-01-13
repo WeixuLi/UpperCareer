@@ -54,14 +54,14 @@ body {
 }
 
 #divNavBar {
-    position: fixed;
     width: 100%;
-    z-index: 100;
 }
 
 #body .container {
     /*Leave space for fixed nav bar.*/
     padding-top: 90px;
+    padding-left: 0;
+    padding-right: 0;
 }
 
 @font-face {
@@ -132,7 +132,6 @@ a {
 
     .search-result .keyword {
         color: #70BF40;
-        font-weight: bold;
     }
 
 .content-info {
@@ -958,6 +957,11 @@ a {
         .notification-list > .item.new {
             background-color: #ecfff4;
         }
+
+.message-main ul {
+    list-style-type: none;
+    padding-left: 0;
+}
 
 .message-main .body {
     margin: 0 10px 10px;

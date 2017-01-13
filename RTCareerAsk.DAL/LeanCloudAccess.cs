@@ -2679,7 +2679,12 @@ namespace RTCareerAsk.DAL
         #endregion
 
         #region Search
-
+        /// <summary>
+        /// 针对关键词进行搜索，结果包括问题和用户，搜索域是问题标题和用户称谓；
+        /// 每一个类别只显示一定数目的结果，需要查看完整结果需要进行扩展搜索。
+        /// </summary>
+        /// <param name="keyword">关键词</param>
+        /// <returns>搜索结果</returns>
         public async Task<SearchResult> SearchByKeywordStupid(string keyword)
         {
             int resultLimitPerCategory = 10;
@@ -2727,12 +2732,24 @@ namespace RTCareerAsk.DAL
 
             return new SearchResult(searchResults);
         }
-
+        /// <summary>
+        /// 针对某一类别进行扩展搜索，结果包括问题和用户，搜索域是问题标题和用户称谓；
+        /// 允许用户通过滚动刷新读取更多结果。
+        /// </summary>
+        /// <param name="keyword">关键词</param>
+        /// <param name="type">数据类别</param>
+        /// <param name="pageIndex">页数</param>
+        /// <returns>搜索结果</returns>
         public async Task<SearchResult> ExtendedSearchByKeywordStupid(string keyword, SearchType type, int pageIndex)
         {
             int resultLimitPerCategory = 10;
-            int pageCapacity = 1000;
+            int pageCapacity = 20;
             string regexStr = ParseSearchConditionRegex(keyword);
+
+            if (pageCapacity < resultLimitPerCategory)
+            {
+                throw new IndexOutOfRangeException("搜索结果初始数量不能大于扩展后每页数量");
+            }
 
             switch (type)
             {
@@ -2743,7 +2760,7 @@ namespace RTCareerAsk.DAL
                         .OrderByDescending("voteDiff")
                         .ThenByDescending("subPostCount")
                         .Skip(pageIndex == 0 ? resultLimitPerCategory : pageIndex * pageCapacity)
-                        .Limit(pageCapacity)
+                        .Limit(pageIndex == 0 ? pageCapacity - resultLimitPerCategory : pageCapacity)
                         .FindAsync()
                         .ContinueWith(t =>
                             {
@@ -2758,7 +2775,7 @@ namespace RTCareerAsk.DAL
                     return await AVUser.Query
                         .WhereMatches("nickname", regexStr)
                         .Skip(pageIndex == 0 ? resultLimitPerCategory : pageIndex * pageCapacity)
-                        .Limit(pageCapacity)
+                        .Limit(pageIndex == 0 ? pageCapacity - resultLimitPerCategory : pageCapacity)
                         .FindAsync()
                         .ContinueWith(t =>
                             {
@@ -2847,7 +2864,12 @@ namespace RTCareerAsk.DAL
                 return t.Result.Count() > 0 ? true : false;
             });
         }
-
+        /// <summary>
+        /// 生成用户的名片信息。
+        /// </summary>
+        /// <param name="userId">申请用户ID</param>
+        /// <param name="target">目标用户名片</param>
+        /// <returns>一条用户名片信息</returns>
         public async Task<UserTag> BuildUserTag(string userId, UserTag target)
         {
             Task<bool?> hasFollowed = IfAlreadyFollowed(userId, target.ObjectID);
@@ -3350,6 +3372,76 @@ namespace RTCareerAsk.DAL
 
                     return t.Result;
                 });
+        }
+
+        public async Task<IEnumerable<AVObject>> GetAllMessagesByContent(string contentId)
+        {
+            return await AVObject.GetQuery("Message")
+                .WhereEqualTo("content", AVObject.CreateWithoutData("Message_Body", contentId))
+                .Limit(10000)
+                .FindAsync()
+                .ContinueWith(t =>
+                    {
+                        if (t.IsFaulted || t.IsCanceled)
+                        {
+                            throw t.Exception;
+                        }
+
+                        return t.Result;
+                    });
+        }
+
+        public async Task<bool> DeleteMessages(IEnumerable<AVObject> msgs)
+        {
+            bool isSuccess = true;
+
+            List<Task> tasks = msgs.Select(x => x.DeleteAsync()
+                .ContinueWith(t =>
+                    {
+                        if (t.IsFaulted || t.IsCanceled)
+                        {
+                            isSuccess = isSuccess && false;
+                            throw t.Exception;
+                        }
+                        else
+                        {
+                            isSuccess = isSuccess && true;
+                        }
+                    })).ToList();
+
+            await Task.WhenAll(tasks.ToArray());
+
+            return isSuccess;
+        }
+
+        public async Task<bool> DeleteMessageBody(string bodyId)
+        {
+            bool isSuccess = true;
+
+            await AVObject.GetQuery("Message_Body")
+                .GetAsync(bodyId)
+                .ContinueWith(t =>
+                    {
+                        if (t.IsFaulted || t.IsCanceled)
+                        {
+                            isSuccess = isSuccess && false;
+                            throw t.Exception;
+                        }
+
+                        t.Result.DeleteAsync()
+                            .ContinueWith(s =>
+                                {
+                                    if (s.IsFaulted || s.IsCanceled)
+                                    {
+                                        isSuccess = isSuccess && false;
+                                        throw s.Exception;
+                                    }
+
+                                    isSuccess = isSuccess && true;
+                                });
+                    });
+
+            return isSuccess;
         }
         #endregion
 

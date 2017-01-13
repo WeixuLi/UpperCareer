@@ -48,6 +48,7 @@ namespace RTCareerAsk
                         ));
 
             bundles.Add(new ScriptBundle("~/bundles/search").Include(
+                        "~/Scripts/Upper/upper-scrollpaging.js",
                         "~/Scripts/Upper/search-result*"
                         ));
 

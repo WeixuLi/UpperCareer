@@ -15,30 +15,59 @@
             title = '',
             context = ''
         };
-        var data = $(this).data(),
-            modal = $('#divModalSm');
+        var modal = $('#divModalSm');
 
+        var data = $(this).data();
         if (data) {
             $.extend(config, data);
         }
 
         config.url = targetUrl;
 
-        $(this).on('click', function () {
-            $.ajax(confirmDel, {
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(config),
-                dataType: 'html',
-                success: function (result) {
-                    modal.children().html(result.trim())
-                },
-                error: function (xhr) {
-                    var json = $.parseJSON(xhr.responseText);
-                    DisplayErrorInfo(json.errorMessage);
+        this.each(function (i) {
+            $(this).on('click', function () {
+                var data = $(this).data();
+
+                if (data) {
+                    $.extend(config, data);
                 }
-            })
+
+                $.ajax(confirmDel, {
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(config),
+                    dataType: 'html',
+                    success: function (result) {
+                        modal.children().html(result.trim())
+                    },
+                    error: function (xhr) {
+                        var json = $.parseJSON(xhr.responseText);
+                        DisplayErrorInfo(json.errorMessage);
+                    }
+                })
+            });
         });
+
+        //$(this).on('click', function () {
+        //    var data = $(this).data();
+        //    if (data) {
+        //        $.extend(config, data);
+        //    }
+
+        //    $.ajax(confirmDel, {
+        //        type: 'POST',
+        //        contentType: 'application/json',
+        //        data: JSON.stringify(config),
+        //        dataType: 'html',
+        //        success: function (result) {
+        //            modal.children().html(result.trim())
+        //        },
+        //        error: function (xhr) {
+        //            var json = $.parseJSON(xhr.responseText);
+        //            DisplayErrorInfo(json.errorMessage);
+        //        }
+        //    })
+        //});
 
         modal.on('click', '.btn-ok', function (e) {
             var data = $(this).data(),

@@ -181,6 +181,18 @@ function AnimatedListDisplay(listItems) {
         $(this).delay(i * 50).fadeIn(200);
     });
 }
+
+function ModifyNewMsgCount(isIncrement) {
+    var badgeNewCount = $('#spnNewMsgCnt'),
+        currentValue = parseInt(badgeNewCount.text()),
+        updatedValue = isIncrement ? currentValue + 1 : currentValue - 1;
+
+    badgeNewCount.text(updatedValue);
+
+    if (updatedValue == 0) {
+        badgeNewCount.fadeOut('slow');
+    }
+}
 //function RequestForDelete(data) {
 //    var config = new Object()
 //    {

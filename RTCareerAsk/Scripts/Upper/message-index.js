@@ -20,31 +20,46 @@ function OnMsgFailure(xhr) {
     DisplayErrorInfo(json.errorMessage);
 }
 
-function OnDeleteBegin() {
-    $('#divMsgBody').empty();
-    $('#divLoader').show();
-}
-
 function OnDeleteSuccess(e) {
     DisplaySuccessInfo('您已成功删除消息！')
 
-    var msgLink = $('#lnkMsg' + e).closest('li');
-    msgLink.fadeOut(500, function () {
+    var msgItem = $('#liMsg' + e);
+    msgItem.slideUp(500, function () {
         $(this).remove();
     });
-    $('#divMsgBody').html('<div>请您从列表中选择要阅读的消息</div>');
+    //$('#divMsgBody').html('<div>请您从列表中选择要阅读的消息</div>');
 }
 
 function OnDeleteComplete() {
     $('#divLoader').hide();
 }
 
-function OnDeleteFailure(xhr) {
-    var json = $.parseJSON(xhr.responseText);
-    DisplayErrorInfo(json.errorMessage);
-}
-
 $(document).ready(function () {
+    $('a[id^="btnDeleteMsg"]').upperconfirmdialog(deleteMessage);
+
+    $(document).on('click', 'h4.panel-title > a', function () {
+        var newBadge = $(this).children('span.badge:contains("new")');
+        if (newBadge.length > 0) {
+            var id = $(this).data('id');
+
+            $.ajax('/Message/MarkMessageAsRead', {
+                method: 'Post',
+                contentType: 'application/json',
+                data: JSON.stringify({ id: id }),
+                success: function () {
+                    ModifyNewMsgCount(false);
+                    newBadge.fadeOut('slow', function () {
+                        $(this).remove();
+                    })
+                },
+                error: function (xhr) {
+                    var json = $.parseJSON(xhr.responseText);
+                    DisplayErrorInfo(json.errorMessage);
+                }
+            });
+        }
+    });
+
     $(document).on('delSuccess', function (e, data) {
         OnDeleteSuccess(data.id);
     })

@@ -17,6 +17,7 @@ function OnExtendResultsSuccess(data, status, xhr, element) {
     });
 
     HighlightKeywords();
+    BindScrollPaging(element);
 }
 
 function OnExtendResultsFailure(xhr, status, error, element) {
@@ -52,6 +53,22 @@ function HighlightKeywords() {
         }
     })
 
+}
+
+function BindScrollPaging(element) {
+    element = $(element);
+    var data = element.data();
+
+    //alert(data.targetid + '\n' + data.contenttype)
+
+    element.find('.content-info').upperscrollpaging('/Home/ExtendSearchResult', {
+        targetId: data.targetid,
+        contentType: data.contenttype,
+        postAction: function () {
+            $(element).siblings('h4').children('.marked-number:first').text($(element).find('ul').find('li').length);
+            HighlightKeywords();
+        }
+    })
 }
 
 $(document).ready(function () {

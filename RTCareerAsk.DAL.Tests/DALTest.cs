@@ -647,7 +647,7 @@ namespace RTCareerAsk.DAL.Tests
         }
 
         [TestMethod]
-        public async Task CreateHistoryByNotifications()
+        public async Task CreateHistoryByNotificationsTst()
         {
             IEnumerable<AVObject> ntfns = await LCDal.LoadAllNotifications();
 
@@ -664,6 +664,30 @@ namespace RTCareerAsk.DAL.Tests
             {
                 Assert.AreEqual(true, task.Result);
             }
+        }
+
+        [TestMethod]
+        public async Task DeleteMessagesTst()
+        {
+            string contentId = "578fa714128fe10063d73522";
+
+            IEnumerable<AVObject> results = await LCDal.GetAllMessagesByContent(contentId);
+
+            Assert.AreEqual(61, results.Count());
+
+            bool isSuccess = await LCDal.DeleteMessages(results);
+
+            Assert.IsTrue(isSuccess);
+        }
+
+        [TestMethod]
+        public async Task DeleteMessageBodyTst()
+        {
+            string bodyId = "578fa714128fe10063d73522";
+
+            bool isSuccess = await LCDal.DeleteMessageBody(bodyId);
+
+            Assert.IsTrue(isSuccess);
         }
         #endregion
     }

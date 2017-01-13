@@ -23,10 +23,16 @@ namespace RTCareerAsk.Controllers
 
                 if (IsUserAuthorized("User,Admin"))
                 {
-                    await UpdateNewMessageCount();
-
                     ViewBag.Title = GenerateTitle("消息");
-                    ViewBag.Notifications = await MessageDa.LoadNotificationsByPage(GetUserID(), new int[] { 0 }, 0);
+
+                    Task tUpdateCount = UpdateNewMessageCount();
+                    Task<List<HistoryModel>> tNtfnModel = MessageDa.LoadNotificationsByPage(GetUserID(), new int[] { 0 }, 0);
+                    Task<List<MessageModel>> tMsgModel = MessageDa.LoadMessagesByUserID(GetUserID());
+
+                    await Task.WhenAll(tUpdateCount, tNtfnModel, tMsgModel);
+
+                    ViewBag.Notifications = tNtfnModel.Result;
+                    ViewBag.UserId = GetUserID();
 
                     if (!string.IsNullOrEmpty(Id))
                     {
@@ -36,7 +42,7 @@ namespace RTCareerAsk.Controllers
                         }
                     }
 
-                    return View(await MessageDa.LoadMessagesByUserID(GetUserID()));
+                    return View(tMsgModel.Result);
                 }
                 else
                 {
@@ -156,6 +162,21 @@ namespace RTCareerAsk.Controllers
             try
             {
                 await MessageDa.MarkNotificationAsRead(id);
+            }
+            catch (Exception e)
+            {
+                while (e.InnerException != null) e = e.InnerException;
+                throw e;
+            }
+        }
+
+        [HttpPost]
+        [UpperJsonExceptionFilter]
+        public async Task MarkMessageAsRead(string id)
+        {
+            try
+            {
+                await UpperMessageService.MarkMessageAsOpened(GetUserID(), id);
             }
             catch (Exception e)
             {

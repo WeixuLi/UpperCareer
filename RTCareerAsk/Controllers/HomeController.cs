@@ -53,16 +53,16 @@ namespace RTCareerAsk.Controllers
 
         [HttpPost]
         [UpperJsonExceptionFilter]
-        public async Task<PartialViewResult> ExtendSearchResult(string keyword, SearchModelType type, int pageIndex)
+        public async Task<PartialViewResult> ExtendSearchResult(string targetId, SearchModelType contentType, int pageIndex)
         {
             try
             {
-                keyword = keyword == MasterSearchKey ? "" : keyword;
+                targetId = targetId == MasterSearchKey ? "" : targetId;
 
-                SearchResultModel result = await HomeDa.ExtendSearchResult(HasUserInfo ? GetUserID() : null, keyword, type, pageIndex);
-                result.Keyword = string.IsNullOrEmpty(keyword) ? MasterSearchKey : keyword;
+                SearchResultModel result = await HomeDa.ExtendSearchResult(HasUserInfo ? GetUserID() : null, targetId, contentType, pageIndex);
+                result.Keyword = string.IsNullOrEmpty(targetId) ? MasterSearchKey : targetId;
 
-                switch (type)
+                switch (contentType)
                 {
                     case SearchModelType.Question:
                         return PartialView("_QuestionList", result.QuestionResults);

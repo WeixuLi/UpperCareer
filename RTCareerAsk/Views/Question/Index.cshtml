@@ -94,9 +94,15 @@
 }
 
 @section featured{
-    <div style="max-width: 700px; margin: 0 auto; background-color: #f7f7f7">
+    <div style="max-width: 700px; padding: 0 10px;" class="centered clear-fix">
+        <div class="alert alert-dismissible alert-info">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            <strong>Heads up!</strong> This <a href="#" class="alert-link">alert needs your attention</a>, but it's not super important.
+        </div>
+    </div>
+    @*<div style="max-width: 700px; margin: 0 auto; background-color: #f7f7f7">
         <div style="padding: 15px">
             @Html.Partial("_QuickPostForm", new RTCareerAsk.Models.QuestionPostModel())
         </div>
-    </div>
+    </div>*@
 }
