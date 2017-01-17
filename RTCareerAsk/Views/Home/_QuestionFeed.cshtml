@@ -1,0 +1,17 @@
+﻿@model RTCareerAsk.Models.QuestionInfoModel
+
+<div id="@string.Format("divQuestion{0}", Model.ID)" class="question-detail panel-collapse collapse" style="overflow:hidden">
+    <div class="box clearfix">
+        <div class="header">
+            @Html.UpperNameTag(Model.Creator)
+        </div>
+        <div id="@string.Format("divQContent{0}", Model.ID)" class="content">
+            @Html.Raw(HttpUtility.HtmlDecode(Model.Content))
+        </div>
+    </div>
+</div>
+<div class="action">
+    <span>推荐 @(Model.VoteDiff)</span>
+    <span>回答（@(Model.SubPostCount)）</span>
+    <span><a data-toggle="collapse" href="@string.Format("#divQuestion{0}", Model.ID)" aria-expanded="false" aria-controls="collapseTwo">查看内容</a></span>
+</div>

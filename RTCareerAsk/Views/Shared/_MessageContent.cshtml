@@ -1,7 +1,6 @@
 ﻿@model RTCareerAsk.Models.MessageModel
 
 @{
-    bool isFromSystem = Model.Content.IsSystem;
     bool isFromSelf = Model.From.UserID == ViewBag.UserId;
 }
 
@@ -19,7 +18,7 @@
     }
     </small>*@
     <div class="float-right">
-        @if (!isFromSystem && !isFromSelf)
+        @if (!Model.Content.IsSystem && !isFromSelf)
         {
             <a href="#" id="btnWriteLetter" data-id="@Model.From.UserID" data-toggle="modal" data-target="#divModal"><span class="glyphicon glyphicon-share-alt icon" aria-hidden="true" data-toggle="tooltip" data-placement="bottom" title="回复" /></a>
         }

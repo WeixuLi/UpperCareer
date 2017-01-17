@@ -1,0 +1,12 @@
+﻿@model RTCareerAsk.Models.AnswerInfoModel
+
+<div>
+    @Html.UpperNameTag(Model.Creator)
+</div>
+<div id="@string.Format("divAnswer{0}", Model.ID)">
+    @Html.Raw(HttpUtility.HtmlDecode(Model.Content))
+</div>
+<div class="action">
+    <span>推荐 @(Model.VoteDiff)</span>
+    <span>评论（@(Model.SubPostCount)）</span>
+</div>

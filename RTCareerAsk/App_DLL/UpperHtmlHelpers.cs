@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
+using System.Web.Mvc.Html;
 using System.Web.Mvc.Ajax;
 using RTCareerAsk.Models;
 
@@ -301,16 +302,16 @@ namespace RTCareerAsk.App_DLL
             return MvcHtmlString.Create(authorTag.ToString());
         }
 
-        public static IHtmlString UpperAlert(this HtmlHelper html, HistoryModel model)
+        public static IHtmlString UpperNotification(this HtmlHelper html, NotificationModel model)
         {
             TagBuilder alertText = new TagBuilder("p");
             List<TagBuilder> links = new List<TagBuilder>();
 
-            if (model.User != null)
+            if (model.From != null && !string.IsNullOrEmpty(model.From.UserID))
             {
                 links.Add(new TagBuilder("a"));
-                links[0].InnerHtml = model.User.Name;
-                links[0].MergeAttribute("href", UrlHelper.GenerateUrl(null, "Index", "User", new RouteValueDictionary(new { id = model.User.UserID }), html.RouteCollection, html.ViewContext.RequestContext, true));
+                links[0].InnerHtml = model.From.Name;
+                links[0].MergeAttribute("href", UrlHelper.GenerateUrl(null, "Index", "User", new RouteValueDictionary(new { id = model.From.UserID }), html.RouteCollection, html.ViewContext.RequestContext, true));
             }
 
             foreach (string name in model.NameStrings)
@@ -339,7 +340,7 @@ namespace RTCareerAsk.App_DLL
                     alertText.InnerHtml = string.Format("{0} 回复了您在问题 {1} 下发表的评论。", links[0].ToString(), links[1].ToString());
                     break;
                 case NotificationType.Answered:
-                    links[1].MergeAttribute("href", UrlHelper.GenerateUrl(null, "QuestionDetail", "Question", new RouteValueDictionary(new { id = model.InfoStrings[0] }), html.RouteCollection, html.ViewContext.RequestContext, true));
+                    links[1].MergeAttribute("href", UrlHelper.GenerateUrl(null, "AnswerDetail", "Question", new RouteValueDictionary(new { id = model.InfoStrings[0] }), html.RouteCollection, html.ViewContext.RequestContext, true));
                     alertText.InnerHtml = string.Format("{0} 在您的问题 {1} 下发表了新回答。", links[0].ToString(), links[1].ToString());
                     break;
                 case NotificationType.Published:
@@ -354,6 +355,59 @@ namespace RTCareerAsk.App_DLL
             }
 
             return MvcHtmlString.Create(alertText.ToString());
+        }
+
+        public static IHtmlString UpperFeed(this HtmlHelper html, FeedModel model)
+        {
+            TagBuilder wrap = new TagBuilder("li");
+            wrap.AddCssClass("list-group-item");
+
+            TagBuilder header = new TagBuilder("div");
+            header.AddCssClass("feed-header");
+
+            TagBuilder p = new TagBuilder("p");
+            TagBuilder link = new TagBuilder("a");
+            link.MergeAttribute("href", UrlHelper.GenerateUrl(null, "Index", "User", new RouteValueDictionary(new { id = model.From.UserID }), html.RouteCollection, html.ViewContext.RequestContext, true));
+            link.InnerHtml = model.From.Name;
+            TagBuilder title = new TagBuilder("a");
+            title.AddCssClass("title");
+            title.InnerHtml = model.Content.Title;
+
+            TagBuilder body = new TagBuilder("div");
+            body.AddCssClass("feed-body");
+
+            switch (model.Type)
+            {
+                case FeedType.LikedQstn:
+                    p.InnerHtml += string.Format("问题被推荐 · {0} · {1}", link.ToString(), model.DateCreate);
+                    title.MergeAttribute("href", UrlHelper.GenerateUrl(null, "QuestionDetail", "Question", new RouteValueDictionary(new { id = model.Content.ID}), html.RouteCollection, html.ViewContext.RequestContext, true));
+                    body.InnerHtml = html.Partial("_QuestionFeed", model.Content as QuestionInfoModel).ToString();
+                    break;
+                case FeedType.LikedAns:
+                    p.InnerHtml += string.Format("答案被推荐 · {0} · {1}", link.ToString(), model.DateCreate);
+                    title.MergeAttribute("href", UrlHelper.GenerateUrl(null, "AnswerDetail", "Question", new RouteValueDictionary(new { id = model.Content.ID }), html.RouteCollection, html.ViewContext.RequestContext, true));
+                    body.InnerHtml = html.Partial("_AnswerFeed", model.Content as AnswerInfoModel).ToString();
+                    break;
+                case FeedType.Answered:
+                    p.InnerHtml += string.Format("回答 · {0} · {1}", link.ToString(), model.DateCreate);
+                    title.MergeAttribute("href", UrlHelper.GenerateUrl(null, "AnswerDetail", "Question", new RouteValueDictionary(new { id = model.Content.ID }), html.RouteCollection, html.ViewContext.RequestContext, true));
+                    body.InnerHtml = html.Partial("_AnswerFeed", model.Content as AnswerInfoModel).ToString();
+                    break;
+                case FeedType.QuestionPosted:
+                    p.InnerHtml += string.Format("提问 · {0} · {1}", link.ToString(), model.DateCreate);
+                    title.MergeAttribute("href", UrlHelper.GenerateUrl(null, "QuestionDetail", "Question", new RouteValueDictionary(new { id = model.Content.ID }), html.RouteCollection, html.ViewContext.RequestContext, true));
+                    body.InnerHtml = html.Partial("_QuestionFeed", model.Content as QuestionInfoModel).ToString();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("输入数据非动态类型，输入类型：" + model.Type.ToString());
+            }
+
+            header.InnerHtml += p.ToString();
+            header.InnerHtml += title.ToString();
+            wrap.InnerHtml += header.ToString();
+            wrap.InnerHtml += body.ToString();
+
+            return MvcHtmlString.Create(wrap.ToString());
         }
         #endregion
 

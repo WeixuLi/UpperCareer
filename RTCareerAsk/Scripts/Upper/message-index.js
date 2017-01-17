@@ -1,24 +1,24 @@
-﻿function OnMsgBegin() {
-    $('#divMsgBody').empty();
-}
+﻿//function OnMsgBegin() {
+//    $('#divMsgBody').empty();
+//}
 
-function OnMsgSuccess() {
-    var msgId = $('#hdnMsgID').val();
-    var newBadge = $('#lnkMsg' + msgId).closest('li').find('span');
-    if (newBadge.length) {
-        newBadge.remove();
-        UpdateNewMsgCount();
-    }
-    $('#btnDeleteMsg').upperconfirmdialog(deleteMessage);
-}
+//function OnMsgSuccess() {
+//    var msgId = $('#hdnMsgID').val();
+//    var newBadge = $('#lnkMsg' + msgId).closest('li').find('span');
+//    if (newBadge.length) {
+//        newBadge.remove();
+//        UpdateNewMsgCount();
+//    }
+//    $('#btnDeleteMsg').upperconfirmdialog(deleteMessage);
+//}
 
-function OnMsgComplete() {
-}
+//function OnMsgComplete() {
+//}
 
-function OnMsgFailure(xhr) {
-    var json = $.parseJSON(xhr.responseText);
-    DisplayErrorInfo(json.errorMessage);
-}
+//function OnMsgFailure(xhr) {
+//    var json = $.parseJSON(xhr.responseText);
+//    DisplayErrorInfo(json.errorMessage);
+//}
 
 function OnDeleteSuccess(e) {
     DisplaySuccessInfo('您已成功删除消息！')
@@ -36,6 +36,13 @@ function OnDeleteComplete() {
 
 $(document).ready(function () {
     $('a[id^="btnDeleteMsg"]').upperconfirmdialog(deleteMessage);
+
+    $('.message-main').upperscrollpaging('/Message/LoadMessagesByPage', {
+        itemSelector: 'li.panel',
+        postAction: function () {
+            $('a[id^="btnDeleteMsg"]').upperconfirmdialog(deleteMessage);
+        }
+    })
 
     $(document).on('click', 'h4.panel-title > a', function () {
         var newBadge = $(this).children('span.badge:contains("new")');

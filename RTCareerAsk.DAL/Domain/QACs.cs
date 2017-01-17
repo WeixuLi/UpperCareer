@@ -7,7 +7,7 @@ using AVOSCloud;
 
 namespace RTCareerAsk.DAL.Domain
 {
-    public class QuestionInfo : UpperQACBaseDomain
+    public class QuestionInfo : UpperInfoBaseDomain
     {
         public QuestionInfo() { }
 
@@ -16,19 +16,6 @@ namespace RTCareerAsk.DAL.Domain
             GenerateQuestionInfoObject(po);
         }
 
-        public QuestionInfo(AVObject po, int ansCnt)
-        {
-            AnswerCount = ansCnt;
-
-            GenerateQuestionInfoObject(po);
-        }
-
-        public string Title { get; set; }
-
-        public int AnswerCount { get; set; }
-
-        public int VoteDiff { get; set; }
-
         private void GenerateQuestionInfoObject(AVObject po)
         {
             if (po.ClassName != "Post")
@@ -36,21 +23,18 @@ namespace RTCareerAsk.DAL.Domain
                 throw new InvalidOperationException(string.Format("获取的对象{0}不是问题类object。", po.ObjectId));
             }
 
-            GenerateQACObject(po);
-            Title = po.Get<string>("title");
-            VoteDiff = po.ContainsKey("voteDiff") ? po.Get<int>("voteDiff") : default(int);
-            AnswerCount = po.ContainsKey("subPostCount") ? po.Get<int>("subPostCount") : default(int);
+            GenerateInfoObject(po);
         }
 
         public QuestionInfo SetAnswerCount(int ansCnt)
         {
-            AnswerCount = ansCnt;
+            SubPostCount = ansCnt;
 
             return this;
         }
     }
 
-    public class AnswerInfo : UpperQACBaseDomain
+    public class AnswerInfo : UpperInfoBaseDomain
     {
         public AnswerInfo() { }
 
@@ -58,19 +42,6 @@ namespace RTCareerAsk.DAL.Domain
         {
             GenerateAnswerInfoObject(ao);
         }
-
-        public AnswerInfo(AVObject ao, int cmtCnt)
-        {
-            CommentCount = cmtCnt;
-
-            GenerateAnswerInfoObject(ao);
-        }
-
-        public Question ForQuestion { get; set; }
-
-        public int CommentCount { get; set; }
-
-        public int VoteDiff { get; set; }
 
         public string RecommandationID { get; set; }
 
@@ -81,16 +52,14 @@ namespace RTCareerAsk.DAL.Domain
                 throw new InvalidOperationException(string.Format("获取的对象{0}不是问题类object。对象类型：{1}", ao.ObjectId, ao.ClassName));
             }
 
-            GenerateQACObject(ao);
-            ForQuestion = ao.Get<AVObject>("forQuestion") != null ? new Question(ao.Get<AVObject>("forQuestion")) : null;
-            VoteDiff = ao.ContainsKey("voteDiff") ? ao.Get<int>("voteDiff") : default(int);
-            CommentCount = ao.ContainsKey("subPostCount") ? ao.Get<int>("subPostCount") : default(int);
+            GenerateInfoObject(ao);
+            Title = ao.Get<AVObject>("forQuestion") != null ? ao.Get<AVObject>("forQuestion").Get<string>("title") : null;
             RecommandationID = ao.ContainsKey("recommendation") && ao.Get<AVObject>("recommendation") != null ? ao.Get<AVObject>("recommendation").ObjectId : default(string);
         }
 
         public AnswerInfo SetCommentCount(int cmtCnt)
         {
-            CommentCount = cmtCnt;
+            SubPostCount = cmtCnt;
 
             return this;
         }

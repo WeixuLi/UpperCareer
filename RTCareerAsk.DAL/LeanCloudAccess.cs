@@ -1499,7 +1499,7 @@ namespace RTCareerAsk.DAL
                 }
             }
 
-            AVQuery<AVObject> query = types.Contains(0) ? AVObject.GetQuery("History") : AVQuery<AVObject>.Or(filter);
+            AVQuery<AVObject> query = types.Contains(0) ? AVObject.GetQuery("History").WhereLessThan("type", 8) : AVQuery<AVObject>.Or(filter);
 
             query = query.WhereEqualTo("forUser", AVObject.CreateWithoutData("_User", userId) as AVUser)
                 .Include("forUser")
@@ -1545,7 +1545,7 @@ namespace RTCareerAsk.DAL
                 }
             }
 
-            AVQuery<AVObject> query = types.Contains(0) ? AVObject.GetQuery("History") : AVQuery<AVObject>.Or(filter);
+            AVQuery<AVObject> query = types.Contains(0) ? AVObject.GetQuery("History").WhereLessThan("type", 8) : AVQuery<AVObject>.Or(filter);
 
             return await query.Include("forUser")
                 .Include("from")
@@ -1600,6 +1600,139 @@ namespace RTCareerAsk.DAL
         }
         #endregion
 
+        #region Feed
+
+        public async Task<IEnumerable<History>> LoadNewFeeds(string userId, int pageIndex)
+        {
+            int pageCapacity = 20;
+            int[] allowedType = { 1, 2, 5, 8 };
+
+            List<AVUser> followees = await (AVUser.CreateWithoutData("_User", userId) as AVUser)
+                .GetFollowees()
+                .ContinueWith(t =>
+                    {
+                        if (t.IsFaulted || t.IsCanceled)
+                        {
+                            throw t.Exception;
+                        }
+
+                        return t.Result.Select(x => x.Get<AVUser>("followee")).ToList();
+                    });
+
+            #region CQL
+
+            string cqlString = "select include from, include forUser, * from History where from in ({0}) and forUser != {1} and type in ({2}) limit {3} order by createdAt desc";
+            string selfStr = string.Format("pointer('_User','{0}')", userId);
+            string resultLimitStr = string.Format("{0},{1}", pageIndex * pageCapacity, pageCapacity);
+            string followeeStr = "";
+            string allowedTypeStr = "";
+
+            for (int i = 0; i < followees.Count; i++)
+            {
+                followeeStr += string.Format("pointer('_User','{0}')", followees[i].ObjectId);
+
+                if (i < followees.Count - 1)
+                {
+                    followeeStr += ",";
+                }
+            }
+
+            for (int i = 0; i < allowedType.Count(); i++)
+            {
+                allowedTypeStr += allowedType[i].ToString();
+
+                if (i < allowedType.Count() - 1)
+                {
+                    allowedTypeStr += ",";
+                }
+            }
+
+            cqlString = string.Format(cqlString, followeeStr, selfStr, allowedTypeStr, resultLimitStr);
+
+            return await AVQuery<AVObject>.DoCloudQuery(cqlString)
+                .ContinueWith(t =>
+                {
+                    if (t.IsFaulted || t.IsCanceled)
+                    {
+                        throw t.Exception;
+                    }
+
+                    return t.Result.Select(x => new History(x));
+                });
+
+            #endregion
+
+            #region Combined Query
+
+            //List<AVQuery<AVObject>> querys = new List<AVQuery<AVObject>>();
+            ////int[] allowedType = { 1, 2, 5 };
+
+            ////foreach (int type in allowedType)
+            ////{
+            ////    querys.Add(AVObject.GetQuery("History").WhereEqualTo("type", type));
+            ////}
+
+            ////AVQuery<AVObject> query = AVQuery<AVObject>.Or(querys);
+
+            //foreach (AVUser followee in followees)
+            //{
+            //    querys.Add(AVObject.GetQuery("History").WhereEqualTo("from", AVObject.CreateWithoutData("_User", followee.ObjectId) as AVUser));
+            //}
+
+            //return await AVQuery<AVObject>.Or(querys)
+            //    .Include("from")
+            //    .Include("forUser")
+            //    .OrderByDescending("createdAt")
+            //    .Skip(pageIndex * pageCapacity)
+            //    .Limit(pageCapacity)
+            //    .FindAsync()
+            //    .ContinueWith(t =>
+            //    {
+            //        if (t.IsFaulted || t.IsCanceled)
+            //        {
+            //            throw t.Exception;
+            //        }
+
+            //        return t.Result.Select(x => new History(x));
+            //    });
+
+            #endregion
+        }
+
+        public async Task<QuestionInfo> LoadQuestionForFeed(string questionId)
+        {
+            return await AVObject.GetQuery("Post")
+                .Include("createdBy")
+                .GetAsync(questionId)
+                .ContinueWith(t =>
+                    {
+                        if (t.IsFaulted || t.IsCanceled)
+                        {
+                            throw t.Exception;
+                        }
+
+                        return new QuestionInfo(t.Result);
+                    });
+        }
+
+        public async Task<AnswerInfo> LoadAnswerForFeed(string answerId)
+        {
+            return await AVObject.GetQuery("Answer")
+                .Include("createdBy")
+                .Include("forQuestion")
+                .GetAsync(answerId)
+                .ContinueWith(t =>
+                    {
+                        if (t.IsFaulted || t.IsCanceled)
+                        {
+                            throw t.Exception;
+                        }
+
+                        return new AnswerInfo(t.Result);
+                    });
+        }
+        #endregion
+
         #region Post Save Operation
         /// <summary>
         /// 保存一个提问到数据库。
@@ -1618,6 +1751,8 @@ namespace RTCareerAsk.DAL
                 }
                 else
                 {
+                    CreateNotification(new History(qsn.CreatedBy.ObjectID, 8, qsn.Title, q.ObjectId));
+
                     return true;
                 }
             });
@@ -1645,7 +1780,7 @@ namespace RTCareerAsk.DAL
                             throw s.Exception;
                         }
 
-                        CreateNotification(ans.Notification);
+                        CreateNotification(ans.Notification.UpdateInfoString(a.ObjectId));
 
                         UpdateSubpostCount(s.Result, true).ContinueWith(x =>
                         {
@@ -2019,7 +2154,7 @@ namespace RTCareerAsk.DAL
         /// </summary>
         /// <param name="userId">用户ID</param>
         /// <returns>一组消息</returns>
-        public async Task<IEnumerable<Message>> LoadMessagesForUser(string userId)
+        public async Task<IEnumerable<Message>> LoadMessagesForUser(string userId, int pageIndex)
         {
             #region CQL Code
             //string cqlString = string.Format("select include content, include from, include to, * from Message where to in (pointer('_User','{0}') , pointer('_User',null))", userId);
@@ -2045,13 +2180,24 @@ namespace RTCareerAsk.DAL
             #endregion
 
             #region AVQuery Code
+            int pageCapacity = 20;
+
             List<AVQuery<AVObject>> querys = new List<AVQuery<AVObject>>()
             {
                 AVObject.GetQuery("Message").WhereEqualTo("to", null),
                 AVObject.GetQuery("Message").WhereEqualTo("to", AVObject.CreateWithoutData("_User", userId) as AVUser)
             };
 
-            IEnumerable<AVObject> msgs = await AVQuery<AVObject>.Or(querys).Include("from").Include("to").Include("content").FindAsync().ContinueWith(t =>  //.WhereEqualTo("isNew", true).WhereEqualTo("isDeleted", false)
+            IEnumerable<AVObject> msgs = await AVQuery<AVObject>.Or(querys)
+                .Include("from")
+                .Include("to")
+                .Include("content")
+                .Skip(pageIndex * pageCapacity)
+                .Limit(pageCapacity)
+                .OrderByDescending("isNew")
+                .ThenByDescending("createdAt")
+                .FindAsync()
+                .ContinueWith(t =>  //.WhereEqualTo("isNew", true).WhereEqualTo("isDeleted", false)
                 {
                     if (t.IsFaulted || t.IsCanceled)
                     {
@@ -2059,7 +2205,10 @@ namespace RTCareerAsk.DAL
                     }
                     else
                     {
-                        return t.Result.GroupBy(x => x.Get<AVObject>("content").ObjectId).Select(x => x.Count() > 1 ? x.Where(y => y.ContainsKey("to")).First() : x.First()).Where(x => !x.Get<bool>("isDeleted")).OrderByDescending(x => x.Get<bool>("isNew"));
+                        return t.Result.GroupBy(x => x.Get<AVObject>("content").ObjectId)
+                            .Select(x => x.Count() > 1 ? x.Where(y => y.ContainsKey("to")).First() : x.First())
+                            .Where(x => !x.Get<bool>("isDeleted"))
+                            .OrderByDescending(x => x.Get<bool>("isNew"));
                     }
                 });
 
@@ -2898,6 +3047,22 @@ namespace RTCareerAsk.DAL
 
             return new UserTag(target).SetFollowerAndAnswerCount(hasFollowed.Result, followerCnt.Result, answerCnt.Result);
         }
+
+        public async Task<string> LoadAlertInfo(string key)
+        {
+            return await AVObject.GetQuery("Alert")
+                .WhereEqualTo("key", key)
+                .FirstOrDefaultAsync()
+                .ContinueWith(t =>
+                    {
+                        if (t.IsFaulted || t.IsCanceled)
+                        {
+                            throw t.Exception;
+                        }
+
+                        return t.Result.Get<string>("value");
+                    });
+        }
         #endregion
 
         #endregion
@@ -3442,6 +3607,74 @@ namespace RTCareerAsk.DAL
                     });
 
             return isSuccess;
+        }
+
+        public async Task<IEnumerable<string>> GetFolloweesID(string userId)
+        {
+            return await (AVUser.CreateWithoutData("_User", userId) as AVUser)
+                .GetFollowees()
+                .ContinueWith(t =>
+                {
+                    if (t.IsFaulted || t.IsCanceled)
+                    {
+                        throw t.Exception;
+                    }
+
+                    return t.Result.Select(x => x.Get<AVUser>("followee").ObjectId);
+                });
+        }
+
+        public async Task<string> GetAnswerId(string questionId, string userId)
+        {
+            return await AVObject.GetQuery("Answer")
+                .WhereEqualTo("forQuestion", AVObject.CreateWithoutData("Post", questionId))
+                .WhereEqualTo("createdBy", AVObject.CreateWithoutData("_User", userId) as AVUser)
+                .FirstOrDefaultAsync()
+                .ContinueWith(t =>
+                    {
+                        if (t.IsFaulted || t.IsCanceled)
+                        {
+                            throw t.Exception;
+                        }
+
+                        return t.Result == null ? questionId : t.Result.ObjectId;
+                    });
+        }
+
+        public async Task<IEnumerable<AVObject>> LoadHistoryByType(int type, int pageIndex)
+        {
+            return await AVObject.GetQuery("History")
+                .WhereEqualTo("type", type)
+                .Include("from")
+                .OrderBy("updatedAt")
+                .Limit(2)
+                .FindAsync()
+                .ContinueWith(t =>
+                    {
+                        if (t.IsFaulted || t.IsCanceled)
+                        {
+                            throw t.Exception;
+                        }
+
+                        return t.Result;
+                    });
+        }
+
+        public async Task<bool> UpdateHistory(AVObject hsty)
+        {
+            string originalInfo = hsty.Get<string>("infoString").Split(';')[0];
+            string updatedInfo = await GetAnswerId(originalInfo, hsty.Get<AVUser>("from").ObjectId);
+            hsty["infoString"] = string.Concat(updatedInfo, ";");
+
+            return await hsty.SaveAsync().ContinueWith(t =>
+                {
+                    if (t.IsFaulted || t.IsCanceled)
+                    {
+                        throw t.Exception;
+                    }
+
+                    return true;
+                });
         }
         #endregion
 

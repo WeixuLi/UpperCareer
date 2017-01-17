@@ -26,7 +26,7 @@ function OnUpdateContentFailure(xhr) {
 }
 
 function OnUpdateListComplete() {
-    AnimatedListDisplay($('#divQuestionList li'));
+    AnimatedListDisplay($('#divQuestionList li.list-group-item'));
 
     BindScrollPaging();
 }
@@ -81,7 +81,7 @@ $(document).ready(function () {
     //ResizeCarousel();
     $('.upper-tab').uppertabs();
 
-    AnimatedListDisplay($('#divQuestionList li'));
+    AnimatedListDisplay($('#divQuestionList li.list-group-item'));
     BindScrollPaging();
 });
 

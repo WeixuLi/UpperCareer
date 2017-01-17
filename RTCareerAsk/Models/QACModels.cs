@@ -6,7 +6,7 @@ using RTCareerAsk.DAL.Domain;
 
 namespace RTCareerAsk.Models
 {
-    public class QuestionInfoModel : UpperQACBaseModel
+    public class QuestionInfoModel : UpperInfoBaseModel
     {
         public QuestionInfoModel() { }
 
@@ -15,22 +15,13 @@ namespace RTCareerAsk.Models
             ConvertQuestionInfoObjectToQuestionInfoModel(qio);
         }
 
-        public string Title { get; set; }
-
-        public string VoteDiff { get; set; }
-
-        public string AnswerCount { get; set; }
-
         private void ConvertQuestionInfoObjectToQuestionInfoModel(QuestionInfo qio)
         {
-            ConvertQACObjectToModel(qio);
-            Title = qio.Title;
-            VoteDiff = ProcessLargeNumDisplay(qio.VoteDiff);
-            AnswerCount = ProcessLargeNumDisplay(qio.AnswerCount);
+            ConvertInfoObjectToModel(qio);
         }
     }
 
-    public class AnswerInfoModel : UpperQACBaseModel
+    public class AnswerInfoModel : UpperInfoBaseModel
     {
         public AnswerInfoModel() { }
 
@@ -39,20 +30,12 @@ namespace RTCareerAsk.Models
             ConvertAnswerInfoObjectToAnswerInfoModel(aio);
         }
 
-        public QuestionModel ForQuestion { get; set; }
-
-        public string VoteDiff { get; set; }
-
-        public string CommentCount { get; set; }
-
         public string RecommandationID { get; set; }
 
         private void ConvertAnswerInfoObjectToAnswerInfoModel(AnswerInfo aio)
         {
-            ConvertQACObjectToModel(aio);
-            ForQuestion = aio.ForQuestion != null ? new QuestionModel(aio.ForQuestion) : null;
-            VoteDiff = ProcessLargeNumDisplay(aio.VoteDiff);
-            CommentCount = ProcessLargeNumDisplay(aio.CommentCount);
+            ConvertInfoObjectToModel(aio);
+            
             RecommandationID = aio.RecommandationID;
         }
     }

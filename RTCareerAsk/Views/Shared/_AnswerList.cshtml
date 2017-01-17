@@ -11,11 +11,11 @@
                         <span>推荐</span>
                     </div>
                     <div class="section number reply-count">
-                        <span class="marked-number">@a.CommentCount</span>
+                        <span class="marked-number">@a.SubPostCount</span>
                         <span>评论</span>
                     </div>
                     <div class="section text">
-                        @Html.ActionLink(a.ForQuestion.Title, "AnswerDetail", "Question", new { id = a.ID }, new { style = "font-size:16px" })
+                        @Html.ActionLink(a.Title, "AnswerDetail", "Question", new { id = a.ID }, new { style = "font-size:16px" })
                         <div>@Html.Raw(HttpUtility.HtmlDecode(a.Content))</div>
                         <p>@Html.UpperAuthor(a.Creator.Name, a.CreateBefore)</p>
                     </div>

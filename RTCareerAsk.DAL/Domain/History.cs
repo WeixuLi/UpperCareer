@@ -59,21 +59,31 @@ namespace RTCareerAsk.DAL.Domain
 
         private void GenerateNotificationObject(string userId, int type, string nameString, string infoString)
         {
-            if (type < 6 || type > 7)
+            if (type < 5 || type > 8)
             {
                 throw new ArgumentOutOfRangeException("此构建函数仅支持指定类型提醒记录，输入类型：" + type.ToString());
             }
-            else if (type == 6)
+
+            switch (type)
             {
-                CompoundNameString = nameString;
-                CompoundInfoString = infoString;
-            }
-            else
-            {
-                FromUser = new User() { ObjectID = infoString };
+                case 6:
+                    ForUser = new User() { ObjectID = userId };
+                    CompoundNameString = nameString;
+                    CompoundInfoString = infoString;
+                    break;
+                case 7:
+                    ForUser = new User() { ObjectID = userId };
+                    FromUser = new User() { ObjectID = infoString };
+                    break;
+                case 8:
+                    FromUser = new User() { ObjectID = infoString };
+                    CompoundNameString = nameString;
+                    CompoundInfoString = infoString;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("此构建函数仅支持指定类型提醒记录，输入类型：" + type.ToString());
             }
 
-            ForUser = new User() { ObjectID = userId };
             Type = type;
         }
 
@@ -81,14 +91,33 @@ namespace RTCareerAsk.DAL.Domain
         {
             AVObject notification = new AVObject("History");
 
-            notification.Add("from", FromUser.LoadUserObject());
-            notification.Add("forUser", ForUser.LoadUserObject());
+            notification.Add("from", FromUser != null ? FromUser.LoadUserObject() : null);
+            notification.Add("forUser", ForUser != null ? ForUser.LoadUserObject() : null);
             notification.Add("type", Type);
             notification.Add("isNew", true);
             notification.Add("nameString", CompoundNameString);
             notification.Add("infoString", CompoundInfoString);
 
             return notification;
+        }
+
+        public History UpdateInfoString(string info)
+        {
+            CompoundInfoString = info + ";";
+
+            return this;
+        }
+
+        public string ReadInfoStringByIndex(int index)
+        {
+            if (!string.IsNullOrEmpty(CompoundInfoString))
+            {
+                return CompoundInfoString.Split(';')[index];
+            }
+            else
+            {
+                return string.Empty;
+            }
         }
     }
 }

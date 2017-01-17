@@ -181,7 +181,7 @@ namespace RTCareerAsk.DAL.Tests
         public async Task LoadMessagesForUserTest()
         {
             string userId = "578a84278ac24700608b9f21";
-            List<Message> messages = await LCDal.LoadMessagesForUser(userId).ContinueWith(t => t.Result.ToList());
+            List<Message> messages = await LCDal.LoadMessagesForUser(userId, 0).ContinueWith(t => t.Result.ToList());
 
             Assert.AreEqual(4, messages.Count());
             Assert.AreEqual(2, messages.Where(x => x.IsNew).Count());
@@ -201,13 +201,13 @@ namespace RTCareerAsk.DAL.Tests
         [TestMethod]
         public async Task WriteNewMessageTest()
         {
-            User from = new User();
-            User to = new User() { ObjectID = "578a84278ac24700608b9f21" };
+            User from = new User() { ObjectID = "578a84278ac24700608b9f21" };
+            User to = new User() { ObjectID = UserId };
             //User to = new User() { ObjectID = "578a84278ac24700608b9f21" };
             MessageBody msgBody = new MessageBody()
             {
-                Title = "您的评论被回复",
-                Content = "您好，你有一条评论被回复，请前往浏览！",
+                Title = "测试消息",
+                Content = "这是一条批量生成的测试消息，请勿回复！",
                 IsSystem = string.IsNullOrEmpty(to.ObjectID)
             };
             Message msg = new Message()
@@ -219,6 +219,41 @@ namespace RTCareerAsk.DAL.Tests
             };
 
             Assert.IsTrue(await LCDal.WriteNewMessage(msg));
+        }
+
+        [TestMethod]
+        public async Task GenerateNewMessagesTest()
+        {
+            bool isSuccess = true;
+            List<Task> tasks = new List<Task>();
+
+            User from = new User() { ObjectID = "578a84278ac24700608b9f21" };
+            User to = new User() { ObjectID = UserId };
+            MessageBody msgBody = new MessageBody()
+            {
+                Title = "测试消息",
+                Content = "这是一条批量生成的测试消息，请勿回复！",
+                IsSystem = string.IsNullOrEmpty(to.ObjectID)
+            };
+            Message msg = new Message()
+            {
+                Content = msgBody,
+                IsNew = true,
+                From = from,
+                To = to
+            };
+
+            for (int i = 0; i < 38; i++)
+            {
+                tasks.Add(LCDal.WriteNewMessage(msg).ContinueWith(t =>
+                    {
+                        isSuccess = isSuccess && t.Result;
+                    }));
+            }
+
+            await Task.WhenAll(tasks.ToArray());
+
+            Assert.IsTrue(isSuccess);
         }
 
         [TestMethod]
@@ -321,7 +356,7 @@ namespace RTCareerAsk.DAL.Tests
 
             qis = await LCDal.LoadQuestionList(0, true);
             Assert.AreEqual(20, qis.Count());
-            Assert.AreEqual(13, qis.First().AnswerCount);
+            Assert.AreEqual(13, qis.First().SubPostCount);
         }
 
         [TestMethod]
@@ -338,7 +373,7 @@ namespace RTCareerAsk.DAL.Tests
 
             ais = await LCDal.LoadAnswerList(0, true);
             Assert.AreEqual(20, ais.Count());
-            Assert.AreEqual(9, ais.First().CommentCount);
+            Assert.AreEqual(9, ais.First().SubPostCount);
         }
 
         [TestMethod]
@@ -447,6 +482,33 @@ namespace RTCareerAsk.DAL.Tests
 
             Assert.AreEqual(type, result.ResultType);
             Assert.AreEqual(28, result.QuestionResults.Count);
+        }
+
+        [TestMethod]
+        public async Task LoadNewFeedsTest()
+        {
+            string userId = "5818104ad203090055cfac51";
+            int[] allowedType = { 1, 2, 5, 8 };
+            IEnumerable<string> followeeIds = await LCDal.GetFolloweesID(userId);
+            IEnumerable<History> results = await LCDal.LoadNewFeeds(userId, 0);
+            string[] ids = results.Where(x => x.ForUser != null && x.ForUser.ObjectID == userId).Select(x => x.ObjectID).ToArray();
+            int[] types = results.Select(x => x.Type).ToArray();
+
+            Assert.IsNotNull(results);
+            Assert.AreEqual(0, results.Where(x => !followeeIds.Contains(x.FromUser.ObjectID)).Count());
+            Assert.AreEqual(0, results.Where(x => !allowedType.Contains(x.Type)).Count());
+            Assert.AreEqual(20, results.Count());
+            Assert.AreEqual(0, results.Where(x => x.ForUser != null && x.ForUser.ObjectID == userId).Count());
+        }
+
+        [TestMethod]
+        public async Task CreateNotificationTest()
+        {
+            string authorId = UserId;
+            string questionTitle = "测试用标题";
+            string atclId = "asdfasdfasdf";
+
+            Assert.IsTrue(await LCDal.CreateNotification(new History(authorId, 8, questionTitle, atclId)));
         }
 
         #endregion
@@ -686,6 +748,28 @@ namespace RTCareerAsk.DAL.Tests
             string bodyId = "578fa714128fe10063d73522";
 
             bool isSuccess = await LCDal.DeleteMessageBody(bodyId);
+
+            Assert.IsTrue(isSuccess);
+        }
+
+        [TestMethod]
+        public async Task CorrectHistoryType5()
+        {
+            bool isSuccess = true;
+
+            IEnumerable<AVObject> historys = await LCDal.LoadHistoryByType(5, 9);
+
+            IEnumerable<Task> tasks = historys.Select(x => LCDal.UpdateHistory(x).ContinueWith(t =>
+                {
+                    if (t.IsFaulted || t.IsCanceled)
+                    {
+                        isSuccess = isSuccess && false;
+                    }
+
+                    isSuccess = isSuccess && t.Result;
+                }));
+
+            await Task.WhenAll(tasks.ToArray());
 
             Assert.IsTrue(isSuccess);
         }

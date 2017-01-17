@@ -31,7 +31,7 @@ namespace RTCareerAsk.Models
             {
                 User = new UserModel() { UserID = VoterID },
                 Target = new UserModel() { UserID = NotifyUserID },
-                Type = (VoteType)Type == VoteType.Question ? NotificationType.LikedQstn : NotificationType.LikedAns,
+                Type = (VoteType)Type == VoteType.Question ? HistoryType.LikedQstn : HistoryType.LikedAns,
                 NameStrings = new string[] { QuestionTitle },
                 InfoStrings = new string[] { TargetID }
             };

@@ -55,7 +55,7 @@ namespace RTCareerAsk.Models
             {
                 User = new UserModel() { UserID = UserID },
                 Target = new UserModel() { UserID = NotifyUserID },
-                Type = NotificationType.Answered,
+                Type = HistoryType.Answered,
                 NameStrings = new string[] { QuestionTitle },
                 InfoStrings = new string[] { QuestionID }
             };
@@ -98,7 +98,7 @@ namespace RTCareerAsk.Models
             {
                 User = new UserModel() { UserID = UserID },
                 Target = new UserModel() { UserID = string.IsNullOrEmpty(NotifyUserID) ? AuthorID : NotifyUserID },
-                Type = string.IsNullOrEmpty(NotifyUserID) ? NotificationType.CommentAns : NotificationType.RepliedCmt,
+                Type = string.IsNullOrEmpty(NotifyUserID) ? HistoryType.CommentAns : HistoryType.RepliedCmt,
                 NameStrings = new string[] { QuestionTitle },
                 InfoStrings = new string[] { AnswerID }
             };

@@ -26,8 +26,8 @@ namespace RTCareerAsk.Controllers
                     ViewBag.Title = GenerateTitle("消息");
 
                     Task tUpdateCount = UpdateNewMessageCount();
-                    Task<List<HistoryModel>> tNtfnModel = MessageDa.LoadNotificationsByPage(GetUserID(), new int[] { 0 }, 0);
-                    Task<List<MessageModel>> tMsgModel = MessageDa.LoadMessagesByUserID(GetUserID());
+                    Task<List<NotificationModel>> tNtfnModel = MessageDa.LoadNotificationsByPage(GetUserID(), new int[] { 0 }, 0);
+                    Task<List<MessageModel>> tMsgModel = MessageDa.LoadMessagesByUserID(GetUserID(), 0);
 
                     await Task.WhenAll(tUpdateCount, tNtfnModel, tMsgModel);
 
@@ -63,7 +63,7 @@ namespace RTCareerAsk.Controllers
             {
                 if (IsUserAuthorized("Admin"))
                 {
-                    List<HistoryModel> model = await MessageDa.LoadNotificationsByPage(new int[] { 0 }, 0);
+                    List<NotificationModel> model = await MessageDa.LoadNotificationsByPage(new int[] { 0 }, 0);
                     ViewBag.IsForAdmin = true;
 
                     return View(model);
@@ -106,7 +106,7 @@ namespace RTCareerAsk.Controllers
                         break;
                 }
 
-                List<HistoryModel> model = await MessageDa.LoadNotificationsByPage(GetUserID(), types.ToArray(), pageIndex);
+                List<NotificationModel> model = await MessageDa.LoadNotificationsByPage(GetUserID(), types.ToArray(), pageIndex);
 
                 return PartialView("_NotificationList", model);
             }
@@ -143,7 +143,7 @@ namespace RTCareerAsk.Controllers
                         break;
                 }
 
-                List<HistoryModel> model = await MessageDa.LoadNotificationsByPage(types.ToArray(), pageIndex);
+                List<NotificationModel> model = await MessageDa.LoadNotificationsByPage(types.ToArray(), pageIndex);
                 ViewBag.IsForAdmin = true;
 
                 return PartialView("_NotificationList", model);
@@ -153,6 +153,21 @@ namespace RTCareerAsk.Controllers
                 while (e.InnerException != null) e = e.InnerException;
                 throw e;
             }
+        }
+
+        [HttpPost]
+        [UpperJsonExceptionFilter]
+        public async Task<PartialViewResult> LoadMessagesByPage(int pageIndex)
+        {
+            if (!HasUserInfo)
+            {
+                throw new ArgumentNullException("您还没有登录");
+            }
+
+            List<MessageModel> results = await MessageDa.LoadMessagesByUserID(GetUserID(), pageIndex);
+            ViewBag.UserId = GetUserID();
+
+            return PartialView("_MessagePartial", results);
         }
 
         [HttpPost]

@@ -228,7 +228,7 @@
     <Compile Include="Models\MessageModels.cs" />
     <Compile Include="Models\HistoryModel.cs" />
     <Compile Include="Models\PostModels.cs" />
-    <Compile Include="Models\QuestionModels.cs" />
+    <Compile Include="Models\QACModels.cs" />
     <Compile Include="Models\SearchResultModel.cs" />
     <Compile Include="Models\TestModels.cs" />
     <Compile Include="Models\UpperBaseModels.cs" />
@@ -702,6 +702,7 @@
     <Content Include="Scripts\knockout-2.2.0.js" />
     <Content Include="Scripts\modernizr-2.6.2.js" />
     <Content Include="Scripts\Upper\article-compose.js" />
+    <Content Include="Scripts\Upper\feeds.js" />
     <Content Include="Scripts\Upper\login.js" />
     <Content Include="Scripts\Upper\notification-all.js" />
     <Content Include="Scripts\Upper\notification-index.js" />
@@ -815,6 +816,9 @@
     <Content Include="Views\Shared\_UserTagList.cshtml" />
     <Content Include="Views\Shared\_ConfirmDel.cshtml" />
     <Content Include="Views\Home\SearchResults.cshtml" />
+    <Content Include="Views\Home\_QuestionFeed.cshtml" />
+    <Content Include="Views\Home\_AnswerFeed.cshtml" />
+    <Content Include="Views\Home\Feeds.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

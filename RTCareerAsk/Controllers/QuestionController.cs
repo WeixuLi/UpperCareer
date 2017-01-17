@@ -19,11 +19,15 @@ namespace RTCareerAsk.Controllers
         {
             try
             {
-                await Task.WhenAll(AutoLogin(), UpdateNewMessageCount());
+                Task<string> tBillboardInfo = LoadAlertInfo("billboard");
+                Task<List<AnswerInfoModel>> tModel = QuestionDa.LoadAnswerListByPage(0, 4);
+
+                await Task.WhenAll(AutoLogin(), UpdateNewMessageCount(), tBillboardInfo, tModel);
 
                 ViewBag.Title = GeneralTitle;
+                ViewBag.Billboard = tBillboardInfo.Result;
 
-                return View(await QuestionDa.LoadAnswerListByPage(0, 4));
+                return View(tModel.Result);
             }
             catch (Exception e)
             {
@@ -37,12 +41,13 @@ namespace RTCareerAsk.Controllers
         {
             try
             {
-                await Task.WhenAll(AutoLogin(), UpdateNewMessageCount());
+                Task<QuestionModel> tModel = QuestionDa.GetQuestionModel(HasUserInfo ? GetUserID() : string.Empty, id);
+                await Task.WhenAll(AutoLogin(), UpdateNewMessageCount(), tModel);
 
-                QuestionModel model = await QuestionDa.GetQuestionModel(HasUserInfo ? GetUserID() : string.Empty, id);
+                QuestionModel model = SetFlagsForActions(tModel.Result);
                 ViewBag.Title = GenerateTitle(model.Title);
 
-                return View(SetFlagsForActions(model));
+                return View(model);
             }
             catch (Exception e)
             {
@@ -56,12 +61,13 @@ namespace RTCareerAsk.Controllers
         {
             try
             {
-                await Task.WhenAll(AutoLogin(), UpdateNewMessageCount());
+                Task<AnswerModel> tModel = QuestionDa.GetAnswerModel(HasUserInfo ? GetUserID() : string.Empty, id);
+                await Task.WhenAll(AutoLogin(), UpdateNewMessageCount(), tModel);
 
-                AnswerModel model = await QuestionDa.GetAnswerModel(HasUserInfo ? GetUserID() : string.Empty, id);
+                AnswerModel model = SetFlagsForActions(tModel.Result);
                 ViewBag.Title = GenerateTitle(string.Format("{0} - {1}的回答", model.ForQuestion.Title, model.Creator.Name));
 
-                return View(SetFlagsForActions(model));
+                return View(model);
             }
             catch (Exception e)
             {
@@ -147,6 +153,8 @@ namespace RTCareerAsk.Controllers
                     throw new InvalidOperationException("用户输入的信息不符合要求");
                 }
 
+                await AutoLogin();
+
                 p.UserID = GetUserID();
 
                 if (await QuestionDa.PostNewQuestion(p))
@@ -154,7 +162,7 @@ namespace RTCareerAsk.Controllers
                     return PartialView("_QuestionList", await QuestionDa.LoadNewQuestions());
                 }
 
-                throw new InvalidOperationException("保存问题失败，请再次尝试");
+                throw new InvalidOperationException("提交问题失败，请再次尝试");
             }
             catch (Exception e)
             {
@@ -176,6 +184,8 @@ namespace RTCareerAsk.Controllers
                     throw new InvalidOperationException("用户输入的信息不符合要求");
                 }
 
+                await AutoLogin();
+
                 a.UserID = GetUserID();
                 a.UserName = GetUserName();
 
@@ -184,7 +194,7 @@ namespace RTCareerAsk.Controllers
                     return PartialView("_AnswersDetail", SetFlagsForActions(await QuestionDa.GetAnswerModels(GetUserID(), a.QuestionID, 0, true)));
                 }
 
-                throw new InvalidOperationException("保存答案失败，请再次尝试");
+                throw new InvalidOperationException("提交答案失败，请再次尝试");
             }
             catch (Exception e)
             {

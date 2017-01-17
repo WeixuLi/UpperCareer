@@ -9,7 +9,6 @@ function OnAnsBegin() {
     var loadingTab = $('#divInfoLoading').find('p');
     loadingTab.text('正在提交答案，请您耐心等待');
     loadingTab.append('<div class="progress progress-striped active"><div class="progress-bar progress-bar-info" style="width: 100%"></div></div>');
-    $('#divAnsForm').collapse('toggle');
 }
 
 function OnCmtBegin() {
@@ -33,6 +32,7 @@ function OnAnsSuccess() {
 
     $('#btnSubmitAns').addClass('disabled');
     $('#btnWriteAnswer').addClass('not-active');
+    $('#divAnsForm').collapse('toggle');
 }
 
 function OnCmtSuccess(ansId) {

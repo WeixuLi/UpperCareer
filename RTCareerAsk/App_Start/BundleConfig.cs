@@ -16,13 +16,19 @@ namespace RTCareerAsk
                         "~/Scripts/Upper/upper-base*",
                         "~/Scripts/Upper/new-post.js"));
 
-            bundles.Add(new ScriptBundle("~/bundles/homepage").Include(
+            bundles.Add(new ScriptBundle("~/bundles/content-list").Include(
                         "~/Scripts/Upper/fix-image-display.js",
                         "~/Scripts/Upper/upper-tabs.js",
                         "~/Scripts/Upper/question-list.js",
                         "~/Scripts/Upper/upper-shorten.js",
                         "~/Scripts/Upper/upper-scrollpaging.js"));
 
+            bundles.Add(new ScriptBundle("~/bundles/feeds").Include(
+                        "~/Scripts/Upper/fix-image-display.js",
+                        "~/Scripts/Upper/upper-shorten.js",
+                        "~/Scripts/Upper/upper-scrollpaging.js",
+                        "~/Scripts/Upper/feeds.js"));
+            
             bundles.Add(new ScriptBundle("~/bundles/login").Include(
                         "~/Scripts/Upper/login.js")); ;
 

@@ -51,6 +51,22 @@ namespace RTCareerAsk.Controllers
             }
         }
 
+        [UpperResult]
+        public async Task<ActionResult> Feeds()
+        {
+            await AutoLogin();
+
+            if (!HasUserInfo)
+            {
+                return RedirectToAction("Login", "Account", new { returnUrl = "/Home/Feeds" });
+            }
+
+            Task<IEnumerable<FeedModel>> tModel = HomeDa.LoadFeedsForUser(GetUserID(), 0);
+            await Task.WhenAll(UpdateNewMessageCount(), tModel);
+
+            return View(tModel.Result);
+        }
+
         [HttpPost]
         [UpperJsonExceptionFilter]
         public async Task<PartialViewResult> ExtendSearchResult(string targetId, SearchModelType contentType, int pageIndex)

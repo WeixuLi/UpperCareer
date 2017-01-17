@@ -1,14 +1,14 @@
-﻿@model IEnumerable<RTCareerAsk.Models.HistoryModel>
+﻿@model IEnumerable<RTCareerAsk.Models.NotificationModel>
 @{
     bool isForAdmin = ViewBag.IsForAdmin != null && ViewBag.IsForAdmin == true ? true : false;
 }
 
 <ul class="notification-list">
-    @foreach (RTCareerAsk.Models.HistoryModel ntfn in Model)
+    @foreach (RTCareerAsk.Models.NotificationModel ntfn in Model)
     {
         <li class="item @Html.AssignClassWithCondition(ntfn.IsNew, "new")" data-id="@ntfn.ID">
             <div>
-                @Html.UpperAlert(ntfn)
+                @Html.UpperNotification(ntfn)
             </div>
             @if (ntfn.IsNew && !isForAdmin)
             {

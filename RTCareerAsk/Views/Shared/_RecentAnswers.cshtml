@@ -15,7 +15,7 @@
                     </div>
                 }
                 <a href="@Url.Action("AnswerDetail", "Question", new { id = a.ID })" style="color:#70BF40">
-                    <h4 class="list-group-item-heading">@a.ForQuestion.Title</h4>
+                    <h4 class="list-group-item-heading">@a.Title</h4>
                 </a>
                 <div class="list-group-item-text">@Html.Raw(HttpUtility.HtmlDecode(a.Content))</div>
                 <p class="extra">@a.CreateBefore</p>

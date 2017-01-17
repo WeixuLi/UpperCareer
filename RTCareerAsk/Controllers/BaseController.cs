@@ -95,6 +95,11 @@ namespace RTCareerAsk.Controllers
             });
         }
 
+        protected async Task<string> LoadAlertInfo(string key)
+        {
+            return await HomeDa.LoadAlertInfo(key);
+        }
+
         protected string GenerateTitle(string prefix)
         {
             return string.Format("{0} - {1}", prefix, TitleMark);

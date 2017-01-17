@@ -7,6 +7,37 @@ using AVOSCloud;
 
 namespace RTCareerAsk.DAL.Domain
 {
+    abstract public class UpperInfoBaseDomain
+    {
+        public string ObjectID { get; set; }
+
+        public User CreatedBy { get; set; }
+
+        public string Title { get; set; }
+
+        public string Content { get; set; }
+
+        public int SubPostCount { get; set; }
+
+        public int VoteDiff { get; set; }
+
+        public DateTime DateCreate { get; set; }
+
+        public DateTime DateUpdate { get; set; }
+
+        protected void GenerateInfoObject(AVObject obj)
+        {
+            ObjectID = obj.ObjectId;
+            CreatedBy = obj.ContainsKey("createdBy") ? new User(obj.Get<AVUser>("createdBy")) : null;
+            Title = obj.ContainsKey("title") ? obj.Get<string>("title") : null;
+            Content = obj.ContainsKey("content") ? obj.Get<string>("content") : null;
+            SubPostCount = obj.ContainsKey("subPostCount") ? obj.Get<int>("subPostCount") : default(int);
+            VoteDiff = obj.ContainsKey("voteDiff") ? obj.Get<int>("voteDiff") : default(int);
+            DateCreate = Convert.ToDateTime(obj.CreatedAt);
+            DateUpdate = Convert.ToDateTime(obj.UpdatedAt);
+        }
+    }
+
     abstract public class UpperQACBaseDomain
     {
         public string ObjectID { get; set; }

@@ -22,6 +22,11 @@ namespace RTCareerAsk.PLtoDA
             return await LCDal.FindAllFiles().ContinueWith(t => ConvertFileInfoObjectsToModels(t.Result));
         }
 
+        public async Task<string> LoadAlertInfo(string key)
+        {
+            return await LCDal.LoadAlertInfo(key);
+        }
+
         public async Task<FileModel> DownloadImageFiles(string fileId)
         {
             return await LCDal.DownloadFileByID(fileId).ContinueWith(t => new FileModel(t.Result));
@@ -59,6 +64,42 @@ namespace RTCareerAsk.PLtoDA
             }
 
             return new List<UserTag>();
+        }
+
+        public async Task<IEnumerable<FeedModel>> LoadFeedsForUser(string userId, int pageIndex)
+        {
+            IEnumerable<History> feeds = await LCDal.LoadNewFeeds(userId, pageIndex);
+
+            List<Task<FeedModel>> tasks = feeds.Select(x => FetchFeedContent(x)).ToList();
+
+            await Task.WhenAll(tasks);
+
+            return tasks.Select(x => x.Result);
+        }
+
+        public async Task<FeedModel> FetchFeedContent(History hsty)
+        {
+            FeedModel result = new FeedModel(hsty);
+
+            switch (hsty.Type)
+            {
+                case 1:
+                    result.Content = await LCDal.LoadQuestionForFeed(hsty.ReadInfoStringByIndex(0)).ContinueWith(t => new QuestionInfoModel(t.Result));
+                    break;
+                case 2:
+                    result.Content = await LCDal.LoadAnswerForFeed(hsty.ReadInfoStringByIndex(0)).ContinueWith(t => new AnswerInfoModel(t.Result));
+                    break;
+                case 5:
+                    result.Content = await LCDal.LoadAnswerForFeed(hsty.ReadInfoStringByIndex(0)).ContinueWith(t => new AnswerInfoModel(t.Result));
+                    break;
+                case 8:
+                    result.Content = await LCDal.LoadQuestionForFeed(hsty.ReadInfoStringByIndex(0)).ContinueWith(t => new QuestionInfoModel(t.Result));
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("输入数据非动态类型，输入类型：" + hsty.Type.ToString());
+            }
+
+            return result;
         }
 
         #region Trunk

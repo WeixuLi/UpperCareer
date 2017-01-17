@@ -16,19 +16,19 @@ namespace RTCareerAsk.PLtoDA
     /// </summary>
     public class Message2DA : DABase
     {
-        public async Task<List<HistoryModel>> LoadNotificationsByPage(string userId, int[] types, int pageIndex = 0)
+        public async Task<List<NotificationModel>> LoadNotificationsByPage(string userId, int[] types, int pageIndex = 0)
         {
             return await LCDal.LoadNotifications(userId, types, pageIndex).ContinueWith(t =>
                 {
-                    return t.Result != null && t.Result.Count() > 0 ? t.Result.Select(x => new HistoryModel(x)).ToList() : new List<HistoryModel>();
+                    return t.Result != null && t.Result.Count() > 0 ? t.Result.Select(x => new NotificationModel(x)).ToList() : new List<NotificationModel>();
                 });
         }
 
-        public async Task<List<HistoryModel>> LoadNotificationsByPage(int[] types, int pageIndex = 0)
+        public async Task<List<NotificationModel>> LoadNotificationsByPage(int[] types, int pageIndex = 0)
         {
             return await LCDal.LoadNotifications(types, pageIndex).ContinueWith(t =>
             {
-                return t.Result != null && t.Result.Count() > 0 ? t.Result.Select(x => new HistoryModel(x)).ToList() : new List<HistoryModel>();
+                return t.Result != null && t.Result.Count() > 0 ? t.Result.Select(x => new NotificationModel(x)).ToList() : new List<NotificationModel>();
             });
         }
 
@@ -37,9 +37,9 @@ namespace RTCareerAsk.PLtoDA
             return await LCDal.MarkNotificationAsRead(id);
         }
 
-        public async Task<List<MessageModel>> LoadMessagesByUserID(string userId)
+        public async Task<List<MessageModel>> LoadMessagesByUserID(string userId, int pageIndex)
         {
-            return await LCDal.LoadMessagesForUser(userId).ContinueWith(t =>
+            return await LCDal.LoadMessagesForUser(userId, pageIndex).ContinueWith(t =>
                 {
                     return t.Result != null && t.Result.Count() > 0 ? t.Result.Select(x => new MessageModel(x)).ToList() : new List<MessageModel>();
                 });
