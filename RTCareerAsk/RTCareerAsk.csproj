@@ -672,6 +672,7 @@
     <None Include="Properties\PublishProfiles\Host.pubxml" />
     <None Include="Properties\PublishProfiles\QCloud.pubxml" />
     <None Include="Scripts\jquery-1.9.1.intellisense.js" />
+    <Content Include="Images\blank.jpg" />
     <Content Include="Images\defaultPortrait.png" />
     <Content Include="Images\error.png" />
     <Content Include="Images\QRCode.png" />

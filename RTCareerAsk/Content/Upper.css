@@ -146,6 +146,7 @@ a {
         .feed-list .feed-header > .title {
             display: block;
             font-size: 16px;
+            font-weight: bold;
         }
 
         .feed-list .feed-header > p {
@@ -155,7 +156,7 @@ a {
         }
 
         .feed-list .feed-header > a {
-            color: #000;
+            color: #444;
         }
 
             .feed-list .feed-header > a:hover {
@@ -1017,17 +1018,34 @@ a {
 }
 
     .notification-list > .item {
+        border-bottom: 1px dashed #dddddd;
         padding: 10px 15px;
         display: flex;
+        font-size: 14px;
         -ms-flex-flow: row;
         -webkit-flex-flow: row;
         flex-flow: row;
         justify-content: space-between;
     }
 
-        .notification-list > .item.new {
-            background-color: #ecfff4;
+        .notification-list > .item:last-child {
+            border-bottom: none;
         }
+
+        .notification-list > .item.new {
+            /*background-color: #ecfff4;*/
+        }
+
+            .notification-list > .item.new p::before {
+                content: "New";
+                font-size: 4px;
+                color: #fff;
+                background-color: #ffac87;
+                padding: 0 4px;
+                margin: 2px;
+                margin-right: 0.5em;
+                border-radius: 5px;
+            }
 
 .message-main ul {
     list-style-type: none;

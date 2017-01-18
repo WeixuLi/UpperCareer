@@ -5,31 +5,40 @@
 }
 
 <div class="content-info">
-    <ul class="list-group box user-list" data-target="@ViewBag.TargetId" data-type="@ViewBag.ContentType">
-        @foreach (RTCareerAsk.Models.UserTagModel tag in Model)
-        {
-            <li class="list-group-item">
-                <div>
-                    @Html.UpperNameTag(tag)
-                    <div style="margin-left: 37px; margin-top: 8px; font-size: 12px">
-                        <p>@tag.AnswerCount 条回答 · @tag.FollowerCount 人关注</p>
+    @if (Model.Count() > 0)
+    {
+        <ul class="list-group box user-list" data-target="@ViewBag.TargetId" data-type="@ViewBag.ContentType">
+            @foreach (RTCareerAsk.Models.UserTagModel tag in Model)
+            {
+                <li class="list-group-item">
+                    <div>
+                        @Html.UpperNameTag(tag)
+                        <div style="margin-left: 37px; margin-top: 8px; font-size: 12px">
+                            <p>@tag.AnswerCount 条回答 · @tag.FollowerCount 人关注</p>
+                        </div>
                     </div>
-                </div>
-                <div>
-                    @if (tag.HasFollowed != null && tag.HasFollowed == true)
-                    {
-                        <button class="btn btn-default btn-sm unfollow @Html.AssignClassWithCondition(!IsAuthorized, "redirect-login")" data-target="@tag.UserID"><span class="glyphicon glyphicon-eye-close"></span>&nbsp;取消关注</button>
-                    }
-                    else if (tag.HasFollowed != null && tag.HasFollowed == false)
-                    {
-                        <button class="btn btn-success btn-sm follow @Html.AssignClassWithCondition(!IsAuthorized, "redirect-login")" data-target="@tag.UserID"><span class="glyphicon glyphicon-eye-open"></span>&nbsp;关注用户</button>
-                    }
-                    else
-                    {
-                        <button class="btn btn-default btn-sm disabled">自己</button>
-                    }
-                </div>
-            </li>
-        }
-    </ul>
+                    <div>
+                        @if (tag.HasFollowed != null && tag.HasFollowed == true)
+                        {
+                            <button class="btn btn-default btn-sm unfollow @Html.AssignClassWithCondition(!IsAuthorized, "redirect-login")" data-target="@tag.UserID"><span class="glyphicon glyphicon-eye-close"></span>&nbsp;取消关注</button>
+                        }
+                        else if (tag.HasFollowed != null && tag.HasFollowed == false)
+                        {
+                            <button class="btn btn-success btn-sm follow @Html.AssignClassWithCondition(!IsAuthorized, "redirect-login")" data-target="@tag.UserID"><span class="glyphicon glyphicon-eye-open"></span>&nbsp;关注用户</button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-default btn-sm disabled">自己</button>
+                        }
+                    </div>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <div>
+            <img src="/Images/blank.jpg" alt="" style="width: 66%; height: auto; margin: 0 auto" />
+        </div>
+    }
 </div>
