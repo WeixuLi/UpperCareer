@@ -44,6 +44,5 @@ D:\工作\UpperCareer\UpperCareer\RTCareerAsk.DAL\bin\Debug\LeanCloud.pdb
 D:\工作\UpperCareer\UpperCareer\RTCareerAsk.DAL\bin\Debug\LeanCloud.xml
 D:\工作\UpperCareer\UpperCareer\RTCareerAsk.DAL\bin\Debug\LeanCloud.NetFx45.pdb
 D:\工作\UpperCareer\UpperCareer\RTCareerAsk.DAL\bin\Debug\LeanCloud.NetFx45.xml
-D:\工作\UpperCareer\UpperCareer\RTCareerAsk.DAL\obj\Debug\RTCareerAsk.DAL.csprojResolveAssemblyReference.cache
 D:\工作\UpperCareer\UpperCareer\RTCareerAsk.DAL\obj\Debug\RTCareerAsk.DAL.dll
 D:\工作\UpperCareer\UpperCareer\RTCareerAsk.DAL\obj\Debug\RTCareerAsk.DAL.pdb

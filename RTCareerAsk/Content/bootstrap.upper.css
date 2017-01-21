@@ -17,7 +17,6 @@ html {
     -ms-text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
 }
-
 body {
     margin: 0;
 }
@@ -6218,7 +6217,7 @@ a.label:focus {
     vertical-align: middle;
     white-space: nowrap;
     text-align: center;
-    background-color: #008cba;
+    background-color: #6ebf40;
     border-radius: 10px;
 }
 
