@@ -380,8 +380,8 @@ namespace RTCareerAsk.App_DLL
             {
                 case FeedType.LikedQstn:
                     p.InnerHtml += string.Format("问题被推荐 · {0} · {1}", link.ToString(), model.DateCreate);
-                    title.MergeAttribute("href", UrlHelper.GenerateUrl(null, "QuestionDetail", "Question", new RouteValueDictionary(new { id = model.Content.ID}), html.RouteCollection, html.ViewContext.RequestContext, true));
-                    body.InnerHtml = html.Partial("_QuestionFeed", model.Content as QuestionInfoModel).ToString();
+                    title.MergeAttribute("href", UrlHelper.GenerateUrl(null, "QuestionDetail", "Question", new RouteValueDictionary(new { id = model.Content.ID }), html.RouteCollection, html.ViewContext.RequestContext, true));
+                    body.InnerHtml = html.Partial("_QuestionFeed", model.Content as QuestionInfoModel, new ViewDataDictionary { { "FeedId", model.ID } }).ToString();
                     break;
                 case FeedType.LikedAns:
                     p.InnerHtml += string.Format("答案被推荐 · {0} · {1}", link.ToString(), model.DateCreate);
@@ -396,7 +396,7 @@ namespace RTCareerAsk.App_DLL
                 case FeedType.QuestionPosted:
                     p.InnerHtml += string.Format("提问 · {0} · {1}", link.ToString(), model.DateCreate);
                     title.MergeAttribute("href", UrlHelper.GenerateUrl(null, "QuestionDetail", "Question", new RouteValueDictionary(new { id = model.Content.ID }), html.RouteCollection, html.ViewContext.RequestContext, true));
-                    body.InnerHtml = html.Partial("_QuestionFeed", model.Content as QuestionInfoModel).ToString();
+                    body.InnerHtml = html.Partial("_QuestionFeed", model.Content as QuestionInfoModel, new ViewDataDictionary { { "FeedId", model.ID } }).ToString();
                     break;
                 default:
                     throw new ArgumentOutOfRangeException("输入数据非动态类型，输入类型：" + model.Type.ToString());

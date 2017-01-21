@@ -820,6 +820,7 @@
     <Content Include="Views\Home\_QuestionFeed.cshtml" />
     <Content Include="Views\Home\_AnswerFeed.cshtml" />
     <Content Include="Views\Home\Feeds.cshtml" />
+    <Content Include="Views\Home\_FeedsPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

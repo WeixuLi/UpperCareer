@@ -511,6 +511,15 @@ namespace RTCareerAsk.DAL.Tests
             Assert.IsTrue(await LCDal.CreateNotification(new History(authorId, 8, questionTitle, atclId)));
         }
 
+        [TestMethod]
+        public async Task LoadQuestionForFeedTest()
+        {
+            string id = "1234";
+            QuestionInfo result = await LCDal.LoadQuestionForFeed(id);
+
+            Assert.IsNull(result);
+        }
+
         #endregion
 
         #region Practice Test

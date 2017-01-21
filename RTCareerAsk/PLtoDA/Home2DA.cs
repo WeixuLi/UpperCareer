@@ -74,7 +74,7 @@ namespace RTCareerAsk.PLtoDA
 
             await Task.WhenAll(tasks);
 
-            return tasks.Select(x => x.Result);
+            return tasks.Where(x => x.Result != null).Select(x => x.Result);
         }
 
         public async Task<FeedModel> FetchFeedContent(History hsty)
@@ -84,22 +84,18 @@ namespace RTCareerAsk.PLtoDA
             switch (hsty.Type)
             {
                 case 1:
-                    result.Content = await LCDal.LoadQuestionForFeed(hsty.ReadInfoStringByIndex(0)).ContinueWith(t => new QuestionInfoModel(t.Result));
+                case 8:
+                    result.Content = await LCDal.LoadQuestionForFeed(hsty.ReadInfoStringByIndex(0)).ContinueWith(t => t.Result != null ? new QuestionInfoModel(t.Result) : null);
                     break;
                 case 2:
-                    result.Content = await LCDal.LoadAnswerForFeed(hsty.ReadInfoStringByIndex(0)).ContinueWith(t => new AnswerInfoModel(t.Result));
-                    break;
                 case 5:
-                    result.Content = await LCDal.LoadAnswerForFeed(hsty.ReadInfoStringByIndex(0)).ContinueWith(t => new AnswerInfoModel(t.Result));
-                    break;
-                case 8:
-                    result.Content = await LCDal.LoadQuestionForFeed(hsty.ReadInfoStringByIndex(0)).ContinueWith(t => new QuestionInfoModel(t.Result));
+                    result.Content = await LCDal.LoadAnswerForFeed(hsty.ReadInfoStringByIndex(0)).ContinueWith(t => t.Result != null ? new AnswerInfoModel(t.Result) : null);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException("输入数据非动态类型，输入类型：" + hsty.Type.ToString());
             }
 
-            return result;
+            return result.Content != null ? result : null;
         }
 
         #region Trunk

@@ -3,7 +3,7 @@
 <div>
     @Html.UpperNameTag(Model.Creator)
 </div>
-<div id="@string.Format("divAnswer{0}", Model.ID)">
+<div id="@string.Format("divAnswer{0}", Model.ID)" style="margin:1em 0;">
     @Html.Raw(HttpUtility.HtmlDecode(Model.Content))
 </div>
 <div class="action">

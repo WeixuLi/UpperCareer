@@ -1,17 +1,6 @@
 ﻿@model IEnumerable<RTCareerAsk.Models.FeedModel>
 
-@{
-    ViewBag.Title = "Feeds";
-}
-
-<div class="feed-list centered">
-    <ul class="list-group">
-        @foreach (RTCareerAsk.Models.FeedModel model in Model)
-        {
-            @Html.UpperFeed(model);
-        }
-    </ul>
-</div>
+@Html.Partial("_FeedsPartial", Model);
 
 @section scripts{
     @Scripts.Render("~/bundles/feeds")

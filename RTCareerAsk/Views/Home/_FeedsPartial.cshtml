@@ -1,0 +1,10 @@
+﻿@model IEnumerable<RTCareerAsk.Models.FeedModel>
+
+<div class="feed-list centered">
+    <ul class="list-group">
+        @foreach (RTCareerAsk.Models.FeedModel model in Model)
+        {
+            @Html.UpperFeed(model);
+        }
+    </ul>
+</div>

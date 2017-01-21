@@ -23,7 +23,7 @@ namespace RTCareerAsk.Controllers
             {
                 await AutoLogin();
 
-                return HasUserInfo ? RedirectToAction("Index", "Question") : RedirectToAction("Index", "Article");
+                return HasUserInfo ? RedirectToAction("Feeds") : RedirectToAction("Index", "Article");
             }
             catch (Exception e)
             {
@@ -87,6 +87,28 @@ namespace RTCareerAsk.Controllers
                     default:
                         throw new IndexOutOfRangeException("错误：不能识别的搜索类型。");
                 }
+            }
+            catch (Exception e)
+            {
+                while (e.InnerException != null) e = e.InnerException;
+                throw e;
+            }
+        }
+
+        [HttpPost]
+        [UpperJsonExceptionFilter]
+        public async Task<PartialViewResult> LoadFeedsByPage(int pageIndex)
+        {
+            try
+            {
+                if (!HasUserInfo)
+                {
+                    throw new TimeoutException("您的登陆已失效，请重新登陆。");
+                }
+
+                IEnumerable<FeedModel> model = await HomeDa.LoadFeedsForUser(GetUserID(), pageIndex);
+
+                return PartialView("_FeedsPartial", model);
             }
             catch (Exception e)
             {

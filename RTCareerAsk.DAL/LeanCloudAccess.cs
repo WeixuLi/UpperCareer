@@ -1701,10 +1701,12 @@ namespace RTCareerAsk.DAL
 
         public async Task<QuestionInfo> LoadQuestionForFeed(string questionId)
         {
-            return await AVObject.GetQuery("Post")
-                .Include("createdBy")
-                .GetAsync(questionId)
-                .ContinueWith(t =>
+            try
+            {
+                return await AVObject.GetQuery("Post")
+                    .Include("createdBy")
+                    .GetAsync(questionId)
+                    .ContinueWith(t =>
                     {
                         if (t.IsFaulted || t.IsCanceled)
                         {
@@ -1713,15 +1715,30 @@ namespace RTCareerAsk.DAL
 
                         return new QuestionInfo(t.Result);
                     });
+            }
+            catch (Exception e)
+            {
+                while (e.InnerException != null) e = e.InnerException;
+                if (e.GetType() == typeof(AVException))
+                {
+                    return null;
+                }
+                else
+                {
+                    throw e;
+                }
+            }
         }
 
         public async Task<AnswerInfo> LoadAnswerForFeed(string answerId)
         {
-            return await AVObject.GetQuery("Answer")
-                .Include("createdBy")
-                .Include("forQuestion")
-                .GetAsync(answerId)
-                .ContinueWith(t =>
+            try
+            {
+                return await AVObject.GetQuery("Answer")
+                    .Include("createdBy")
+                    .Include("forQuestion")
+                    .GetAsync(answerId)
+                    .ContinueWith(t =>
                     {
                         if (t.IsFaulted || t.IsCanceled)
                         {
@@ -1730,6 +1747,19 @@ namespace RTCareerAsk.DAL
 
                         return new AnswerInfo(t.Result);
                     });
+            }
+            catch (Exception e)
+            {
+                while (e.InnerException != null) e = e.InnerException;
+                if (e.GetType() == typeof(AVException))
+                {
+                    return null;
+                }
+                else
+                {
+                    throw e;
+                }
+            }
         }
         #endregion
 

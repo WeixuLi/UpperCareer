@@ -32,7 +32,7 @@
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-2">
             <ul class="nav navbar-nav">
                 <li class="@Html.IsSelected("Article")">@Html.ActionLink("精选", "Index", "Article")</li>
-                <li class="@Html.IsSelected("Question")">@Html.ActionLink("问答", "Index", "Question")</li>
+                <li class="@Html.IsSelected("Home","Feeds")">@Html.ActionLink("动态", "Feeds", "Home")</li>
                 @*<li><a id="lnkFollowUs" href="#" data-toggle="popover" data-placement="bottom"><span class="glyphicon glyphicon-qrcode"></span>&nbsp;关注我们</a></li>*@
             </ul>
             <form id="formSearch" action="@Url.Action("SearchResults", "Home")" method="get" class="navbar-form navbar-left" role="search">
