@@ -22,36 +22,30 @@ namespace RTCareerAsk.DAL
         /// <returns>代表注册是否成功的Boolean值</returns>
         public async Task<bool> RegisterUser(User u)
         {
-            bool isSuccess = false;
+            bool isSuccess = true;
             AVUser uo = u.CreateUserObjectForRegister();
 
-            await uo.SignUpAsync().ContinueWith(t =>
+            await uo.SignUpAsync()
+                .ContinueWith(t =>
                 {
                     if (t.IsCanceled || t.IsFaulted)
                     {
+                        isSuccess = isSuccess && false;
                         throw t.Exception;
                     }
 
-                    isSuccess = true;
+                    AssignRolesToUser(uo.ObjectId, u.Roles.Select(x => x.RoleName))
+                        .ContinueWith(s =>
+                            {
+                                if (s.IsFaulted || s.IsCanceled)
+                                {
+                                    isSuccess = isSuccess && false;
+                                    throw s.Exception;
+                                }
+                            });
                 });
 
-            if (isSuccess)
-            {
-                isSuccess = false;
-
-                List<string> roleNames = new List<string>();
-
-                foreach (Role r in u.Roles)
-                {
-                    roleNames.Add(r.RoleName);
-                }
-
-                return await AssignRolesToUser(uo.ObjectId, roleNames);
-            }
-            else
-            {
-                return false;
-            }
+            return isSuccess;
         }
         /// <summary>
         /// 验证用户是否存在。
@@ -61,7 +55,7 @@ namespace RTCareerAsk.DAL
         /// <returns>代表用户是否存在的Boolean值</returns>
         public async Task<bool> ValidateUser(string userName, string password)
         {
-            bool IsValidated = false;
+            bool IsValidated = true;
 
             try
             {
@@ -69,11 +63,8 @@ namespace RTCareerAsk.DAL
                 {
                     if (t.IsFaulted || t.IsCanceled)
                     {
+                        IsValidated = IsValidated && false;
                         throw t.Exception;
-                    }
-                    else
-                    {
-                        IsValidated = true;
                     }
                 });
 
@@ -101,7 +92,18 @@ namespace RTCareerAsk.DAL
                     }
                     else
                     {
-                        return AVRole.Query.WhereEqualTo("users", t.Result).FindAsync().ContinueWith(s => new User(t.Result).SetRoles(s.Result));
+                        return AVRole.Query
+                            .WhereEqualTo("users", t.Result)
+                            .FindAsync()
+                            .ContinueWith(s =>
+                                {
+                                    if (s.IsFaulted || s.IsCanceled)
+                                    {
+                                        throw s.Exception;
+                                    }
+
+                                    return new User(t.Result).SetRoles(s.Result);
+                                });
                     }
                 }).Unwrap();
         }
@@ -130,25 +132,27 @@ namespace RTCareerAsk.DAL
         /// <returns>代表指派是否成功的Boolean值</returns>
         public async Task<bool> AssignRolesToUser(string userId, IEnumerable<string> roleNames)
         {
+            bool isSuccess = true;
             AVUser u = AVUser.CreateWithoutData("_User", userId) as AVUser;
-            List<Task<AVRole>> rs = new List<Task<AVRole>>();
 
-            foreach (string roleName in roleNames)
-            {
-                rs.Add(AVRole.Query.Include("users").WhereEqualTo("name", roleName).FirstAsync().ContinueWith(t =>
+            List<Task<AVRole>> tRoles = roleNames.Select(x => AVRole.Query
+                .Include("users")
+                .WhereEqualTo("name", x)
+                .FirstAsync()
+                .ContinueWith(t =>
                     {
                         if (t.IsFaulted || t.IsCanceled)
                         {
+                            isSuccess = isSuccess && false;
                             throw t.Exception;
                         }
 
                         t.Result.Get<AVRelation<AVUser>>("users").Add(u);
 
                         return t.Result;
-                    }));
-            }
+                    })).ToList();
 
-            await Task.WhenAll(rs.ToArray());
+            await Task.WhenAll(tRoles.ToArray());
 
             #region Code for Debug
             //foreach (Task<AVRole> r in rs)
@@ -163,22 +167,19 @@ namespace RTCareerAsk.DAL
             //}
             #endregion
 
-            List<Task> ts = new List<Task>();
-
-            foreach (Task<AVRole> tr in rs)
-            {
-                ts.Add(tr.Result.SaveAsync().ContinueWith(t =>
+            List<Task> tSave = tRoles.Select(x => x.Result.SaveAsync()
+                .ContinueWith(t =>
                     {
                         if (t.IsFaulted || t.IsCanceled)
                         {
+                            isSuccess = isSuccess && false;
                             throw t.Exception;
                         }
-                    }));
-            }
+                    })).ToList();
 
-            await Task.WhenAll(ts.ToArray());
+            await Task.WhenAll(tSave.ToArray());
 
-            return true;
+            return isSuccess;
         }
         /// <summary>
         /// 给一个用户去除身份。
@@ -188,25 +189,27 @@ namespace RTCareerAsk.DAL
         /// <returns>代表去除是否成功的Boolean值</returns>
         public async Task<bool> RemoveRolesFromUser(string userId, IEnumerable<string> roleNames)
         {
+            bool isSuccess = true;
             AVUser u = AVUser.CreateWithoutData("_User", userId) as AVUser;
-            List<Task<AVRole>> rs = new List<Task<AVRole>>();
 
-            foreach (string roleName in roleNames)
-            {
-                rs.Add(AVRole.Query.Include("users").WhereEqualTo("name", roleName).FirstAsync().ContinueWith(t =>
+            List<Task<AVRole>> tRoles = roleNames.Select(x => AVRole.Query
+                .Include("users")
+                .WhereEqualTo("name", x)
+                .FirstAsync()
+                .ContinueWith(t =>
                 {
                     if (t.IsFaulted || t.IsCanceled)
                     {
+                        isSuccess = isSuccess && false;
                         throw t.Exception;
                     }
 
                     t.Result.Get<AVRelation<AVUser>>("users").Remove(u);
 
                     return t.Result;
-                }));
-            }
+                })).ToList();
 
-            await Task.WhenAll(rs.ToArray());
+            await Task.WhenAll(tRoles.ToArray());
 
             #region Code for Debug
             //foreach (Task<AVRole> r in rs)
@@ -221,22 +224,19 @@ namespace RTCareerAsk.DAL
             //}
             #endregion
 
-            List<Task> ts = new List<Task>();
-
-            foreach (Task<AVRole> tr in rs)
-            {
-                ts.Add(tr.Result.SaveAsync().ContinueWith(t =>
-                {
-                    if (t.IsFaulted || t.IsCanceled)
+            List<Task> tSave = tRoles.Select(x => x.Result.SaveAsync()
+                    .ContinueWith(t =>
                     {
-                        throw t.Exception;
-                    }
-                }));
-            }
+                        if (t.IsFaulted || t.IsCanceled)
+                        {
+                            isSuccess = isSuccess && false;
+                            throw t.Exception;
+                        }
+                    })).ToList();
 
-            await Task.WhenAll(ts.ToArray());
+            await Task.WhenAll(tSave.ToArray());
 
-            return true;
+            return isSuccess;
         }
         /// <summary>
         /// 读取指定用户数据。
@@ -375,79 +375,153 @@ namespace RTCareerAsk.DAL
                 throw new InvalidOperationException("没有指定保存对象ID或称谓空缺");
             }
 
-            if (!string.IsNullOrEmpty(ud.ObjectId))
-            {
-                return await AVObject.GetQuery("UserDetail").GetAsync(ud.ObjectId).ContinueWith(t =>
+            bool isSuccess = true;
+            Task tUserSave = AVUser.Query
+                .GetAsync(ud.ForUser.ObjectID)
+                .ContinueWith(t =>
                 {
                     if (t.IsFaulted || t.IsCanceled)
                     {
+                        isSuccess = isSuccess && false;
                         throw t.Exception;
                     }
 
-                    return ud.UpdateUserDetailObject(t.Result).SaveAsync().ContinueWith(u =>
+                    t.Result["nickname"] = ud.ForUser.Name;
+                    t.Result["title"] = ud.ForUser.Title;
+                    t.Result["gender"] = ud.ForUser.Gender;
+                    t.Result["company"] = ud.ForUser.Company;
+                    t.Result["fieldIndex"] = ud.ForUser.FieldIndex;
+
+                    t.Result.SaveAsync().ContinueWith(s =>
+                    {
+                        if (s.IsFaulted || s.IsCanceled)
+                        {
+                            isSuccess = isSuccess && false;
+                            throw s.Exception;
+                        }
+                    });
+                });
+
+            if (!string.IsNullOrEmpty(ud.ObjectId))
+            {
+                #region For Update
+                Task tDetailSave = AVObject.GetQuery("UserDetail").GetAsync(ud.ObjectId).ContinueWith(t =>
+                {
+                    if (t.IsFaulted || t.IsCanceled)
+                    {
+                        isSuccess = isSuccess && false;
+                        throw t.Exception;
+                    }
+
+                    ud.UpdateUserDetailObject(t.Result).SaveAsync().ContinueWith(u =>
                     {
                         if (u.IsFaulted || u.IsCanceled)
                         {
+                            isSuccess = isSuccess && false;
                             throw u.Exception;
                         }
-
-                        return AVUser.Query.GetAsync(ud.ForUser.ObjectID).ContinueWith(v =>
-                        {
-                            if (v.IsFaulted || v.IsCanceled)
-                            {
-                                throw v.Exception;
-                            }
-
-                            v.Result["nickname"] = ud.ForUser.Name;
-                            v.Result["title"] = ud.ForUser.Title;
-                            v.Result["gender"] = ud.ForUser.Gender;
-                            v.Result["company"] = ud.ForUser.Company;
-                            v.Result["fieldIndex"] = ud.ForUser.FieldIndex;
-
-                            return v.Result.SaveAsync().ContinueWith(w =>
-                            {
-                                if (w.IsFaulted || w.IsCanceled)
-                                {
-                                    throw w.Exception;
-                                }
-
-                                return true;
-                            });
-                        });
-                    });
-                }).Unwrap().Unwrap().Unwrap();
-            }
-
-            return await ud.CreateUserDetailObjectForSave().SaveAsync().ContinueWith(t =>
-            {
-                if (t.IsFaulted || t.IsCanceled)
-                {
-                    throw t.Exception;
-                }
-
-                return AVUser.Query.GetAsync(ud.ForUser.ObjectID).ContinueWith(s =>
-                {
-                    if (s.IsFaulted || s.IsCanceled)
-                    {
-                        throw s.Exception;
-                    }
-
-                    s.Result["nickname"] = ud.ForUser.Name;
-                    s.Result["title"] = ud.ForUser.Title;
-                    s.Result["gender"] = ud.ForUser.Gender;
-                    s.Result["company"] = ud.ForUser.Company;
-                    s.Result["fieldIndex"] = ud.ForUser.FieldIndex;
-                    return s.Result.SaveAsync().ContinueWith(x =>
-                    {
-                        if (x.IsFaulted || x.IsCanceled)
-                        {
-                            throw x.Exception;
-                        }
-
-                        return true;
                     });
                 });
-            }).Unwrap().Unwrap();
+
+                await Task.WhenAll(tDetailSave, tUserSave);
+
+                return isSuccess;
+                #endregion
+
+                #region Trunk
+                //return await AVObject.GetQuery("UserDetail").GetAsync(ud.ObjectId).ContinueWith(t =>
+                //{
+                //    if (t.IsFaulted || t.IsCanceled)
+                //    {
+                //        throw t.Exception;
+                //    }
+
+                //    return ud.UpdateUserDetailObject(t.Result).SaveAsync().ContinueWith(u =>
+                //    {
+                //        if (u.IsFaulted || u.IsCanceled)
+                //        {
+                //            throw u.Exception;
+                //        }
+
+                //        return AVUser.Query.GetAsync(ud.ForUser.ObjectID).ContinueWith(v =>
+                //        {
+                //            if (v.IsFaulted || v.IsCanceled)
+                //            {
+                //                throw v.Exception;
+                //            }
+
+                //            v.Result["nickname"] = ud.ForUser.Name;
+                //            v.Result["title"] = ud.ForUser.Title;
+                //            v.Result["gender"] = ud.ForUser.Gender;
+                //            v.Result["company"] = ud.ForUser.Company;
+                //            v.Result["fieldIndex"] = ud.ForUser.FieldIndex;
+
+                //            return v.Result.SaveAsync().ContinueWith(w =>
+                //            {
+                //                if (w.IsFaulted || w.IsCanceled)
+                //                {
+                //                    throw w.Exception;
+                //                }
+
+                //                return true;
+                //            });
+                //        });
+                //    });
+                //}).Unwrap().Unwrap().Unwrap();
+                #endregion
+            }
+            else
+            {
+                #region For New
+                Task tDetailSave = ud.CreateUserDetailObjectForSave()
+                    .SaveAsync()
+                    .ContinueWith(t =>
+                    {
+                        if (t.IsFaulted || t.IsCanceled)
+                        {
+                            isSuccess = isSuccess && false;
+                            throw t.Exception;
+                        }
+                    });
+
+                await Task.WhenAll(tDetailSave, tUserSave);
+
+                return isSuccess;
+                #endregion
+
+                #region Trunk
+                //return await ud.CreateUserDetailObjectForSave().SaveAsync().ContinueWith(t =>
+                //{
+                //    if (t.IsFaulted || t.IsCanceled)
+                //    {
+                //        throw t.Exception;
+                //    }
+
+                //    return AVUser.Query.GetAsync(ud.ForUser.ObjectID).ContinueWith(s =>
+                //    {
+                //        if (s.IsFaulted || s.IsCanceled)
+                //        {
+                //            throw s.Exception;
+                //        }
+
+                //        s.Result["nickname"] = ud.ForUser.Name;
+                //        s.Result["title"] = ud.ForUser.Title;
+                //        s.Result["gender"] = ud.ForUser.Gender;
+                //        s.Result["company"] = ud.ForUser.Company;
+                //        s.Result["fieldIndex"] = ud.ForUser.FieldIndex;
+                //        return s.Result.SaveAsync().ContinueWith(x =>
+                //        {
+                //            if (x.IsFaulted || x.IsCanceled)
+                //            {
+                //                throw x.Exception;
+                //            }
+
+                //            return true;
+                //        });
+                //    });
+                //}).Unwrap().Unwrap();
+                #endregion
+            }
         }
         /// <summary>
         /// 关注一个用户。
@@ -569,34 +643,6 @@ namespace RTCareerAsk.DAL
             await Task.WhenAll(detail, followerCount, followeeCount);
 
             return detail.Result.SetFollowCounts(followerCount.Result, followeeCount.Result);
-            //return await AVObject.GetQuery("UserDetail")
-            //    .Include("forUser")
-            //    .WhereEqualTo("forUser", AVUser.CreateWithoutData("_User", userId) as AVUser)
-            //    .FindAsync()
-            //    .ContinueWith(async t =>
-            //    {
-            //        if (t.IsFaulted || t.IsCanceled)
-            //        {
-            //            throw t.Exception;
-            //        }
-
-            //        if (t.Result.Count() == 0)
-            //        {
-            //            return await AVUser.Query.GetAsync(userId).ContinueWith(s =>
-            //                {
-            //                    if (s.IsFaulted || s.IsCanceled)
-            //                    {
-            //                        throw s.Exception;
-            //                    }
-
-            //                    return new UserDetail(s.Result);
-            //                });
-            //        }
-            //        else
-            //        {
-            //            return new UserDetail(t.Result.First());
-            //        }
-            //    }).Unwrap();
         }
         /// <summary>
         /// 查询用户的粉丝数。
@@ -605,7 +651,10 @@ namespace RTCareerAsk.DAL
         /// <returns>粉丝数量</returns>
         public async Task<int> GetFollowerCount(string userId)
         {
-            return await (AVUser.CreateWithoutData("_User", userId) as AVUser).GetFollowerQuery().CountAsync().ContinueWith(t =>
+            return await (AVUser.CreateWithoutData("_User", userId) as AVUser)
+                .GetFollowerQuery()
+                .CountAsync()
+                .ContinueWith(t =>
                 {
                     if (t.IsFaulted || t.IsCanceled)
                     {
@@ -622,7 +671,10 @@ namespace RTCareerAsk.DAL
         /// <returns>关注数量</returns>
         public async Task<int> GetFolloweeCount(string userId)
         {
-            return await (AVUser.CreateWithoutData("_User", userId) as AVUser).GetFolloweeQuery().CountAsync().ContinueWith(t =>
+            return await (AVUser.CreateWithoutData("_User", userId) as AVUser)
+                .GetFolloweeQuery()
+                .CountAsync()
+                .ContinueWith(t =>
                 {
                     if (t.IsFaulted || t.IsCanceled)
                     {
@@ -714,12 +766,7 @@ namespace RTCareerAsk.DAL
         /// <returns>一组用户名片信息</returns>
         public async Task<IEnumerable<UserTag>> BuildUserTag(bool isFollowerRequest, string userId, IEnumerable<AVObject> targets)
         {
-            List<Task<UserTag>> tasks = new List<Task<UserTag>>();
-
-            foreach (AVUser user in targets.Select(x => x.Get<AVUser>(isFollowerRequest ? "follower" : "followee")))
-            {
-                tasks.Add(BuildUserTag(userId, user));
-            }
+            List<Task<UserTag>> tasks = targets.Select(x => BuildUserTag(userId, x.Get<AVUser>(isFollowerRequest ? "follower" : "followee"))).ToList();
 
             await Task.WhenAll(tasks.ToArray());
 
@@ -903,14 +950,7 @@ namespace RTCareerAsk.DAL
                         throw t.Exception;
                     }
 
-                    List<QuestionInfo> questions = new List<QuestionInfo>();
-
-                    foreach (AVObject obj in t.Result)
-                    {
-                        questions.Add(new QuestionInfo(obj));
-                    }
-
-                    return questions;
+                    return t.Result.Select(x => new QuestionInfo(x));
                 });
         }
         /// <summary>
@@ -937,14 +977,7 @@ namespace RTCareerAsk.DAL
                         throw t.Exception;
                     }
 
-                    List<AnswerInfo> answers = new List<AnswerInfo>();
-
-                    foreach (AVObject obj in t.Result)
-                    {
-                        answers.Add(new AnswerInfo(obj));
-                    }
-
-                    return answers;
+                    return t.Result.Select(x => new AnswerInfo(x));
                 });
 
         }
@@ -971,14 +1004,7 @@ namespace RTCareerAsk.DAL
                             throw t.Exception;
                         }
 
-                        List<QuestionInfo> questions = new List<QuestionInfo>();
-
-                        foreach (AVObject ans in t.Result)
-                        {
-                            questions.Add(new QuestionInfo(ans));
-                        }
-
-                        return questions;
+                        return t.Result.Select(x => new QuestionInfo(x));
                     });
         }
         /// <summary>
@@ -995,6 +1021,7 @@ namespace RTCareerAsk.DAL
                 .WhereEqualTo("createdBy", AVObject.CreateWithoutData("_User", userId) as AVUser)
                 .Include("forQuestion")
                 .OrderByDescending("recommendation")
+                .ThenBy("createdAt")
                 .Skip(pageIndex * pageCapacity)
                 .Limit(pageCapacity)
                 .FindAsync()
@@ -1005,14 +1032,7 @@ namespace RTCareerAsk.DAL
                             throw t.Exception;
                         }
 
-                        List<AnswerInfo> answers = new List<AnswerInfo>();
-
-                        foreach (AVObject obj in t.Result)
-                        {
-                            answers.Add(new AnswerInfo(obj));
-                        }
-
-                        return answers.OrderByDescending(x => x.RecommandationID).ThenByDescending(x => x.DateCreate);
+                        return t.Result.Select(x => new AnswerInfo(x));
                     });
         }
         #endregion
@@ -1028,42 +1048,89 @@ namespace RTCareerAsk.DAL
         {
             try
             {
-                //return await FindAnswersByQuestion(userId, questionId).ContinueWith(t =>
-                return await LoadAnswersByQuestion(userId, questionId, 0, true).ContinueWith(t =>
+                AVObject questionCopy = AVObject.CreateWithoutData("Post", questionId);
+
+                Task<AVObject> tQuestion = AVObject.GetQuery("Post").Include("createdBy").GetAsync(questionId).ContinueWith(t =>
                 {
                     if (t.IsFaulted || t.IsCanceled)
                     {
                         throw t.Exception;
                     }
 
-                    return AVObject.GetQuery("Post").Include("createdBy").GetAsync(questionId).ContinueWith(s =>
+                    UpdateViewCount(t.Result);
+
+                    return t.Result;
+                });
+
+                Task<IEnumerable<Answer>> tAnswers = LoadAnswersByQuestion(userId, questionId, 0, true).ContinueWith(t =>
+                {
+                    if (t.IsFaulted || t.IsCanceled)
                     {
-                        if (s.IsFaulted || s.IsCanceled)
-                        {
-                            throw s.Exception;
-                        }
+                        throw t.Exception;
+                    }
 
-                        UpdateViewCount(s.Result);
+                    return t.Result;
+                });
 
-                        return IsQuestionLikedByUser(userId, s.Result).ContinueWith(r =>
+                Task<bool?> tIsLiked = IsQuestionLikedByUser(userId, questionCopy).ContinueWith(t =>
                             {
-                                if (r.IsFaulted || r.IsCanceled)
+                                if (t.IsFaulted || t.IsCanceled)
                                 {
-                                    throw r.Exception;
+                                    throw t.Exception;
                                 }
 
-                                return LoadVoteCounts(s.Result, true).ContinueWith(v =>
+                                return t.Result;
+                            });
+
+                Task<Dictionary<string, int>> tVoteCount = LoadVoteCounts(questionCopy, true).ContinueWith(t =>
                                 {
-                                    if (v.IsFaulted || v.IsCanceled)
+                                    if (t.IsFaulted || t.IsCanceled)
                                     {
-                                        throw v.Exception;
+                                        throw t.Exception;
                                     }
 
-                                    return new Question(s.Result, t.Result).SetUserVote(r.Result).SetVoteCounts(v.Result);
+                                    return t.Result;
                                 });
-                            });
-                    });
-                }).Unwrap().Unwrap().Unwrap();
+
+                await Task.WhenAll(tQuestion, tAnswers, tIsLiked, tVoteCount);
+
+                return new Question(tQuestion.Result, tAnswers.Result).SetUserVote(tIsLiked.Result).SetVoteCounts(tVoteCount.Result);
+
+                //return await LoadAnswersByQuestion(userId, questionId, 0, true).ContinueWith(t =>
+                //{
+                //    if (t.IsFaulted || t.IsCanceled)
+                //    {
+                //        throw t.Exception;
+                //    }
+
+                //    return AVObject.GetQuery("Post").Include("createdBy").GetAsync(questionId).ContinueWith(s =>
+                //    {
+                //        if (s.IsFaulted || s.IsCanceled)
+                //        {
+                //            throw s.Exception;
+                //        }
+
+                //        UpdateViewCount(s.Result);
+
+                //        return IsQuestionLikedByUser(userId, s.Result).ContinueWith(r =>
+                //            {
+                //                if (r.IsFaulted || r.IsCanceled)
+                //                {
+                //                    throw r.Exception;
+                //                }
+
+                //                return LoadVoteCounts(s.Result, true).ContinueWith(v =>
+                //                {
+                //                    if (v.IsFaulted || v.IsCanceled)
+                //                    {
+                //                        throw v.Exception;
+                //                    }
+
+                //                    return new Question(s.Result, t.Result).SetUserVote(r.Result).SetVoteCounts(v.Result);
+                //                });
+                //            });
+                //    });
+                //}).Unwrap().Unwrap().Unwrap();
             }
             catch (Exception)
             {
@@ -1152,11 +1219,7 @@ namespace RTCareerAsk.DAL
                         throw new InvalidOperationException("获取的对象不是答案类object。");
                     }
 
-                    List<Task<Answer>> tl = new List<Task<Answer>>();
-
-                    foreach (AVObject a in ans)
-                    {
-                        tl.Add(GetAnswerWithComments(userId, a).ContinueWith(t =>
+                    List<Task<Answer>> tl = ans.Select(x => GetAnswerWithComments(userId, x).ContinueWith(t =>
                         {
                             if (t.IsFaulted || t.IsCanceled)
                             {
@@ -1164,19 +1227,11 @@ namespace RTCareerAsk.DAL
                             }
 
                             return t.Result;
-                        }));
-                    }
+                        })).ToList();
 
                     await Task.WhenAll(tl.ToArray());
 
-                    List<Answer> answers = new List<Answer>();
-
-                    foreach (Task<Answer> t in tl)
-                    {
-                        answers.Add(t.Result);
-                    }
-
-                    return answers;
+                    return tl.Select(x => x.Result);
                 }
 
                 return null;
@@ -1296,14 +1351,7 @@ namespace RTCareerAsk.DAL
                         throw t.Exception;
                     }
 
-                    List<Comment> cmts = new List<Comment>();
-
-                    foreach (AVObject cmt in t.Result)
-                    {
-                        cmts.Add(new Comment(cmt));
-                    }
-
-                    return cmts;
+                    return t.Result.Select(x => new Comment(x));
                 });
         }
         /// <summary>
@@ -1385,18 +1433,8 @@ namespace RTCareerAsk.DAL
                     voteCounts.Add(positiveKey, default(int));
                     voteCounts.Add(negativeKey, default(int));
 
-                    foreach (AVObject obj in t.Result)
-                    {
-                        //obj.Get<bool>("isLike") ? voteCounts[positiveKey]++ : voteCounts[negativeKey]++;
-                        if (obj.Get<bool>("isLike"))
-                        {
-                            voteCounts[positiveKey]++;
-                        }
-                        else
-                        {
-                            voteCounts[negativeKey]++;
-                        }
-                    }
+                    voteCounts[positiveKey] = t.Result.Where(x => x.Get<bool>("isLike")).Count();
+                    voteCounts[negativeKey] = t.Result.Where(x => !x.Get<bool>("isLike")).Count();
 
                     return voteCounts;
                 });
@@ -1516,14 +1554,7 @@ namespace RTCareerAsk.DAL
                         throw t.Exception;
                     }
 
-                    List<History> notifications = new List<History>();
-
-                    foreach (AVObject n in t.Result)
-                    {
-                        notifications.Add(new History(n));
-                    }
-
-                    return notifications;
+                    return t.Result.Select(x => new History(x));
                 });
         }
         /// <summary>
@@ -1561,14 +1592,7 @@ namespace RTCareerAsk.DAL
                         throw t.Exception;
                     }
 
-                    List<History> notifications = new List<History>();
-
-                    foreach (AVObject n in t.Result)
-                    {
-                        notifications.Add(new History(n));
-                    }
-
-                    return notifications;
+                    return t.Result.Select(x => new History(x));
                 });
         }
         /// <summary>
@@ -1665,7 +1689,7 @@ namespace RTCareerAsk.DAL
             #region Combined Query
 
             //List<AVQuery<AVObject>> querys = new List<AVQuery<AVObject>>();
-            ////int[] allowedType = { 1, 2, 5 };
+            ////int[] allowedType = { 1, 2, 5, 8 };
 
             ////foreach (int type in allowedType)
             ////{
@@ -1701,65 +1725,57 @@ namespace RTCareerAsk.DAL
 
         public async Task<QuestionInfo> LoadQuestionForFeed(string questionId)
         {
-            try
-            {
-                return await AVObject.GetQuery("Post")
-                    .Include("createdBy")
-                    .GetAsync(questionId)
-                    .ContinueWith(t =>
+            return await AVObject.GetQuery("Post")
+                .Include("createdBy")
+                .GetAsync(questionId)
+                .ContinueWith(t =>
+                {
+                    if (t.IsFaulted || t.IsCanceled)
                     {
-                        if (t.IsFaulted || t.IsCanceled)
-                        {
-                            throw t.Exception;
-                        }
+                        throw t.Exception;
+                    }
 
-                        return new QuestionInfo(t.Result);
-                    });
-            }
-            catch (Exception e)
-            {
-                while (e.InnerException != null) e = e.InnerException;
-                if (e.GetType() == typeof(AVException))
-                {
-                    return null;
-                }
-                else
-                {
-                    throw e;
-                }
-            }
+                    return new QuestionInfo(t.Result);
+                });
         }
 
         public async Task<AnswerInfo> LoadAnswerForFeed(string answerId)
         {
-            try
-            {
-                return await AVObject.GetQuery("Answer")
-                    .Include("createdBy")
-                    .Include("forQuestion")
-                    .GetAsync(answerId)
-                    .ContinueWith(t =>
+            return await AVObject.GetQuery("Answer")
+                .Include("createdBy")
+                .Include("forQuestion")
+                .GetAsync(answerId)
+                .ContinueWith(t =>
+                {
+                    if (t.IsFaulted || t.IsCanceled)
+                    {
+                        throw t.Exception;
+                    }
+
+                    return new AnswerInfo(t.Result);
+                });
+        }
+
+        public async Task<IEnumerable<Comment>> LoadCommentsForAnswerFeeds(string answerId, int pageIndex)
+        {
+            int pageCapacity = 20;
+
+            return await AVObject.GetQuery("Comment")
+                .WhereEqualTo("forAnswer", AVObject.CreateWithoutData("Answer", answerId))
+                .Include("createdBy")
+                //.Skip(pageIndex * pageCapacity)
+                //.Limit(pageCapacity)
+                .OrderByDescending("createdAt")
+                .FindAsync()
+                .ContinueWith(t =>
                     {
                         if (t.IsFaulted || t.IsCanceled)
                         {
                             throw t.Exception;
                         }
 
-                        return new AnswerInfo(t.Result);
+                        return t.Result.Select(x => new Comment(x));
                     });
-            }
-            catch (Exception e)
-            {
-                while (e.InnerException != null) e = e.InnerException;
-                if (e.GetType() == typeof(AVException))
-                {
-                    return null;
-                }
-                else
-                {
-                    throw e;
-                }
-            }
         }
         #endregion
 
@@ -1904,16 +1920,14 @@ namespace RTCareerAsk.DAL
             AVObject ans = await AVObject.GetQuery("Answer").Include("forQuestion").GetAsync(ansId);
             IEnumerable<AVObject> cmts = await AVObject.GetQuery("Comment").WhereEqualTo("forAnswer", ans).FindAsync();
 
-            foreach (AVObject cmt in cmts)
-            {
-                ts.Add(cmt.DeleteAsync().ContinueWith(t =>
+            ts.AddRange(cmts.Select(x => x.DeleteAsync()
+                .ContinueWith(t =>
+                {
+                    if (t.IsFaulted || t.IsCanceled)
                     {
-                        if (t.IsFaulted || t.IsCanceled)
-                        {
-                            throw t.Exception;
-                        }
-                    }));
-            }
+                        throw t.Exception;
+                    }
+                })));
 
             ts.Add(ans.DeleteAsync().ContinueWith(t =>
             {
@@ -1929,14 +1943,9 @@ namespace RTCareerAsk.DAL
                             throw s.Exception;
                         }
                     });
+                DeleteHistoryWithAnswer(ansId);
 
-                DeleteVoteRecords(ansId, false).ContinueWith(s =>
-                    {
-                        if (s.IsFaulted || s.IsCanceled)
-                        {
-                            throw s.Exception;
-                        }
-                    });
+                DeleteVoteRecords(ansId, false);
             }));
 
             Task.WaitAll(ts.ToArray());
@@ -2005,8 +2014,6 @@ namespace RTCareerAsk.DAL
         /// <returns></returns>
         public async Task DeleteVoteRecords(string objId, bool isQuestion)
         {
-            List<Task> ts = new List<Task>();
-
             IEnumerable<AVObject> votes = await AVObject.GetQuery(isQuestion ? "VotePost" : "VoteAnswer")
                 .WhereEqualTo("voteFor", AVObject.CreateWithoutData(isQuestion ? "Post" : "Answer", objId))
                 .FindAsync()
@@ -2020,16 +2027,43 @@ namespace RTCareerAsk.DAL
                     return t.Result;
                 });
 
-            foreach (AVObject obj in votes)
-            {
-                ts.Add(obj.DeleteAsync().ContinueWith(t =>
+            List<Task> tDelete = votes.Select(x => x.DeleteAsync().ContinueWith(t =>
+                {
+                    if (t.IsFaulted || t.IsCanceled)
+                    {
+                        throw t.Exception;
+                    }
+                })).ToList();
+
+            await Task.WhenAll(tDelete.ToArray());
+        }
+
+        public async Task DeleteHistoryWithAnswer(string ansId)
+        {
+            IEnumerable<AVObject> hists = await AVObject.GetQuery("History")
+                .WhereContains("infoString", ansId)
+                .Limit(1000)
+                .FindAsync()
+                .ContinueWith(t =>
                     {
                         if (t.IsFaulted || t.IsCanceled)
                         {
                             throw t.Exception;
                         }
-                    }));
-            }
+
+                        return t.Result;
+                    });
+
+            List<Task> tDelete = hists.Select(x => x.DeleteAsync()
+                .ContinueWith(t =>
+                    {
+                        if (t.IsFaulted || t.IsCanceled)
+                        {
+                            throw t.Exception;
+                        }
+                    })).ToList();
+
+            await Task.WhenAll(tDelete.ToArray());
         }
         /// <summary>
         /// 保存并生成一条新的资讯。
@@ -2242,32 +2276,8 @@ namespace RTCareerAsk.DAL
                     }
                 });
 
-            List<Message> messages = new List<Message>();
-
-            foreach (AVObject message in msgs)
-            {
-                messages.Add(new Message(message));
-            }
-
-            return messages;
+            return msgs.Select(x => new Message(x));
             #endregion
-        }
-        /// <summary>
-        /// 读取一条消息。
-        /// </summary>
-        /// <param name="messageId">消息ID</param>
-        /// <returns>消息对象</returns>
-        public async Task<Message> GetMessageByID(string messageId)
-        {
-            return await AVObject.GetQuery("Message").Include("from").Include("to").Include("content").GetAsync(messageId).ContinueWith(t =>
-                {
-                    if (t.IsFaulted || t.IsCanceled)
-                    {
-                        throw t.Exception;
-                    }
-
-                    return new Message(t.Result);
-                });
         }
         /// <summary>
         /// 查询用户的新消息数量。
@@ -2698,7 +2708,7 @@ namespace RTCareerAsk.DAL
         /// </summary>
         /// <param name="pageIndex">页数</param>
         /// <returns>一组包含资讯摘要信息的对象</returns>
-        public async Task<List<ArticleInfo>> LoadArticleList(int pageIndex)
+        public async Task<IEnumerable<ArticleInfo>> LoadArticleList(int pageIndex)
         {
             var pageCapacity = 10;
 
@@ -2714,14 +2724,7 @@ namespace RTCareerAsk.DAL
                         throw t.Exception;
                     }
 
-                    List<ArticleInfo> atcls = new List<ArticleInfo>();
-
-                    foreach (AVObject atcl in t.Result)
-                    {
-                        atcls.Add(new ArticleInfo(atcl));
-                    }
-
-                    return atcls;
+                    return t.Result.Select(x => new ArticleInfo(x));
                 });
         }
         /// <summary>
@@ -2731,18 +2734,21 @@ namespace RTCareerAsk.DAL
         /// <returns>包含资讯详情的对象</returns>
         public async Task<Article> LoadArticle(string id)
         {
-            return await AVObject.GetQuery("Article").Include("reference").Include("editor").GetAsync(id).ContinueWith(t =>
-            {
-                if (t.IsFaulted || t.IsCanceled)
+            return await AVObject.GetQuery("Article")
+                .Include("reference")
+                .Include("editor")
+                .GetAsync(id)
+                .ContinueWith(t =>
                 {
-                    throw t.Exception;
-                }
+                    if (t.IsFaulted || t.IsCanceled)
+                    {
+                        throw t.Exception;
+                    }
 
-                UpdateViewCount(t.Result);
+                    UpdateViewCount(t.Result);
 
-                return LoadArticleWithComments(t.Result);
-            })
-            .Unwrap();
+                    return LoadArticleWithComments(t.Result);
+                }).Unwrap();
         }
         /// <summary>
         /// 读取一条资讯详情并包含评论。
@@ -2778,7 +2784,7 @@ namespace RTCareerAsk.DAL
         /// <param name="atclId">资讯ID</param>
         /// <param name="pageIndex">页数</param>
         /// <returns>一组包含资讯评论信息的对象</returns>
-        public async Task<List<ArticleComment>> LoadArticleComments(string atclId, int pageIndex)
+        public async Task<IEnumerable<ArticleComment>> LoadArticleComments(string atclId, int pageIndex)
         {
             int pageCapacity = 20;
 
@@ -2796,14 +2802,7 @@ namespace RTCareerAsk.DAL
                         throw t.Exception;
                     }
 
-                    List<ArticleComment> acmts = new List<ArticleComment>();
-
-                    foreach (AVObject cmt in t.Result)
-                    {
-                        acmts.Add(new ArticleComment(cmt));
-                    }
-
-                    return acmts;
+                    return t.Result.Select(x => new ArticleComment(x));
                 });
         }
         /// <summary>
@@ -2818,7 +2817,7 @@ namespace RTCareerAsk.DAL
 
             if (!string.IsNullOrEmpty(id))
             {
-                AVObject reference = await AVObject.GetQuery("Answer")
+                atclRef = new ArticleReference(await AVObject.GetQuery("Answer")
                     .Include("createdBy")
                     .Include("forQuestion")
                     .GetAsync(id)
@@ -2830,9 +2829,7 @@ namespace RTCareerAsk.DAL
                         }
 
                         return t.Result;
-                    });
-
-                atclRef = new ArticleReference(reference);
+                    }));
             }
             else
             {
@@ -3654,30 +3651,25 @@ namespace RTCareerAsk.DAL
                 });
         }
 
-        public async Task<string> GetAnswerId(string questionId, string userId)
+        public async Task<AVUser> GetUserByQuestion(string questionId)
         {
-            return await AVObject.GetQuery("Answer")
-                .WhereEqualTo("forQuestion", AVObject.CreateWithoutData("Post", questionId))
-                .WhereEqualTo("createdBy", AVObject.CreateWithoutData("_User", userId) as AVUser)
-                .FirstOrDefaultAsync()
-                .ContinueWith(t =>
+            return await AVObject.GetQuery("Post").Include("createdBy").GetAsync(questionId).ContinueWith(t =>
+                {
+                    if (t.IsFaulted || t.IsCanceled)
                     {
-                        if (t.IsFaulted || t.IsCanceled)
-                        {
-                            throw t.Exception;
-                        }
+                        throw t.Exception;
+                    }
 
-                        return t.Result == null ? questionId : t.Result.ObjectId;
-                    });
+                    return t.Result.Get<AVUser>("createdBy");
+                });
         }
 
-        public async Task<IEnumerable<AVObject>> LoadHistoryByType(int type, int pageIndex)
+        public async Task<IEnumerable<AVObject>> LoadHistoryByType(int type)
         {
             return await AVObject.GetQuery("History")
                 .WhereEqualTo("type", type)
-                .Include("from")
-                .OrderBy("updatedAt")
-                .Limit(2)
+                .OrderByDescending("createdAt")
+                .Limit(1000)
                 .FindAsync()
                 .ContinueWith(t =>
                     {
@@ -3692,9 +3684,8 @@ namespace RTCareerAsk.DAL
 
         public async Task<bool> UpdateHistory(AVObject hsty)
         {
-            string originalInfo = hsty.Get<string>("infoString").Split(';')[0];
-            string updatedInfo = await GetAnswerId(originalInfo, hsty.Get<AVUser>("from").ObjectId);
-            hsty["infoString"] = string.Concat(updatedInfo, ";");
+            string info = hsty.Get<string>("infoString").Split(';')[0];
+            hsty["from"] = await GetUserByQuestion(info);
 
             return await hsty.SaveAsync().ContinueWith(t =>
                 {
@@ -3705,6 +3696,141 @@ namespace RTCareerAsk.DAL
 
                     return true;
                 });
+        }
+
+        public async Task<IEnumerable<string>> FindAllAnswerIDsFromHistory(int pageIndex = 0)
+        {
+            int[] allowedType = { 2, 3, 4, 5 };
+            IEnumerable<AVQuery<AVObject>> querys = allowedType.Select(x => AVObject.GetQuery("History").WhereEqualTo("type", x));
+
+            AVQuery<AVObject> query = AVQuery<AVObject>.Or(querys).Limit(2000);
+
+            return await AVQuery<AVObject>.Or(querys)
+                .Skip(pageIndex * 1000)
+                .Limit(1000)
+                .FindAsync()
+                .ContinueWith(t =>
+                {
+                    if (t.IsFaulted || t.IsCanceled)
+                    {
+                        throw t.Exception;
+                    }
+
+                    IEnumerable<int> types = t.Result.Select(x => x.Get<int>("type")).Distinct();
+                    return t.Result.Select(x => x.Get<string>("infoString").Split(';').First()).Distinct();
+                });
+        }
+
+        public async Task<IEnumerable<string>> FindAllAnswerIDsFromAnswer()
+        {
+            return await AVObject.GetQuery("Answer")
+                .Limit(1000)
+                .FindAsync()
+                .ContinueWith(t =>
+                    {
+                        if (t.IsFaulted || t.IsCanceled)
+                        {
+                            throw t.Exception;
+                        }
+
+                        return t.Result.Select(x => x.ObjectId);
+                    });
+        }
+
+        public async Task<bool> DeleteHistoryWithVoidAnswers(IEnumerable<string> voidAnsIds)
+        {
+            if (voidAnsIds.Count() == 0)
+            {
+                return true;
+            }
+
+            bool isSuccess = true;
+            IEnumerable<AVQuery<AVObject>> querys = voidAnsIds.Select(x => AVObject.GetQuery("History").WhereContains("infoString", x));
+
+            IEnumerable<AVObject> voidHists = await AVQuery<AVObject>.Or(querys)
+                .Limit(1000)
+                .OrderByDescending("createdAt")
+                .FindAsync()
+                .ContinueWith(t =>
+                    {
+                        if (t.IsFaulted || t.IsCanceled)
+                        {
+                            isSuccess = isSuccess && false;
+                            throw t.Exception;
+                        }
+
+                        return t.Result;
+                    });
+
+            List<Task> tDelete = voidHists.Select(x => x.DeleteAsync().ContinueWith(t =>
+                {
+                    if (t.IsFaulted || t.IsCanceled)
+                    {
+                        isSuccess = isSuccess && false;
+                        throw t.Exception;
+                    }
+                })).ToList();
+
+            await Task.WhenAll(tDelete.ToArray());
+
+            return isSuccess;
+        }
+
+        public async Task<IEnumerable<string>> FindAllAnswerIDsFromVotes(int pageIndex = 0)
+        {
+            return await AVObject.GetQuery("VoteAnswer")
+                .Skip(pageIndex * 1000)
+                .Limit(1000)
+                .OrderByDescending("createdAt")
+                .FindAsync()
+                .ContinueWith(t =>
+                    {
+                        if (t.IsFaulted || t.IsCanceled)
+                        {
+                            throw t.Exception;
+                        }
+
+                        return t.Result.Select(x => x.Get<AVObject>("voteFor").ObjectId).Distinct();
+                    });
+        }
+
+        public async Task<bool> DeleteVotesWithVoidAnswers(IEnumerable<string> voidAnsIds)
+        {
+            if (voidAnsIds.Count() == 0)
+            {
+                return true;
+            }
+
+            bool isSuccess = true;
+            IEnumerable<AVQuery<AVObject>> querys = voidAnsIds.Select(x => AVObject.GetQuery("VoteAnswer").WhereEqualTo("voteFor", AVObject.CreateWithoutData("Answer", x)));
+
+            IEnumerable<AVObject> voidVotes = await AVQuery<AVObject>.Or(querys)
+                .Limit(1000)
+                .OrderByDescending("createdAt")
+                .FindAsync()
+                .ContinueWith(t =>
+                    {
+                        if (t.IsFaulted || t.IsCanceled)
+                        {
+                            isSuccess = isSuccess && false;
+                            throw t.Exception;
+                        }
+
+                        return t.Result;
+                    });
+
+            List<Task> tDelete = voidVotes.Select(x => x.DeleteAsync().ContinueWith(t =>
+            {
+                if (t.IsFaulted || t.IsCanceled)
+                {
+                    isSuccess = isSuccess && false;
+                    throw t.Exception;
+                }
+            })).ToList();
+
+            await Task.WhenAll(tDelete.ToArray());
+
+            return isSuccess;
         }
         #endregion
 

@@ -45,11 +45,6 @@ namespace RTCareerAsk.PLtoDA
                 });
         }
 
-        public async Task<MessageModel> GetMessageByID(string messageId)
-        {
-            return await LCDal.GetMessageByID(messageId).ContinueWith(t => new MessageModel(t.Result));
-        }
-
         public async Task WriteNewMessage(LetterModel l)
         {
             await LCDal.WriteNewMessage(l.CreateMessageForSave());

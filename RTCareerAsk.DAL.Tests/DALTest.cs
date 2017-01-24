@@ -762,25 +762,49 @@ namespace RTCareerAsk.DAL.Tests
         }
 
         [TestMethod]
-        public async Task CorrectHistoryType5()
+        public async Task CorrectHistoryType8()
         {
             bool isSuccess = true;
 
-            IEnumerable<AVObject> historys = await LCDal.LoadHistoryByType(5, 9);
+            IEnumerable<AVObject> historys = await LCDal.LoadHistoryByType(8);
 
-            IEnumerable<Task> tasks = historys.Select(x => LCDal.UpdateHistory(x).ContinueWith(t =>
-                {
-                    if (t.IsFaulted || t.IsCanceled)
+            IEnumerable<Task> tasks = historys.Where(x => x.Get<AVUser>("from").ObjectId == x.Get<string>("infoString"))
+                .Select(x => LCDal.UpdateHistory(x)
+                    .ContinueWith(t =>
                     {
-                        isSuccess = isSuccess && false;
-                    }
+                        if (t.IsFaulted || t.IsCanceled)
+                        {
+                            isSuccess = isSuccess && false;
+                        }
 
-                    isSuccess = isSuccess && t.Result;
-                }));
+                        isSuccess = isSuccess && t.Result;
+                    }));
 
             await Task.WhenAll(tasks.ToArray());
 
             Assert.IsTrue(isSuccess);
+        }
+
+        [TestMethod]
+        public async Task EliminateVoidHistory()
+        {
+            IEnumerable<string> answerIdsFromHistory = await LCDal.FindAllAnswerIDsFromHistory(1);
+            IEnumerable<string> answerIdsFromAnswer = await LCDal.FindAllAnswerIDsFromAnswer();
+
+            IEnumerable<string> voidAnswerIDs = answerIdsFromHistory.Where(x => !answerIdsFromAnswer.Contains(x));
+
+            Assert.IsTrue(await LCDal.DeleteHistoryWithVoidAnswers(voidAnswerIDs));
+        }
+
+        [TestMethod]
+        public async Task EliminateVoidVotes()
+        {
+            IEnumerable<string> answerIdsFromAnswer = await LCDal.FindAllAnswerIDsFromAnswer();
+            IEnumerable<string> answerIdsFromVotes = await LCDal.FindAllAnswerIDsFromVotes(1);
+
+            IEnumerable<string> voidAnswerIDs = answerIdsFromVotes.Where(x => !answerIdsFromAnswer.Contains(x));
+
+            Assert.IsTrue(await LCDal.DeleteVotesWithVoidAnswers(voidAnswerIDs));
         }
         #endregion
     }

@@ -118,6 +118,26 @@ namespace RTCareerAsk.Controllers
         }
 
         [HttpPost]
+        [UpperResult]
+        [UpperJsonExceptionFilter]
+        public async Task<PartialViewResult> LoadFeedAnswerComments(string ansId)
+        {
+            try
+            {
+                ViewBag.AnswerID = ansId;
+
+                IEnumerable<CommentModel> model = await HomeDa.LoadCommentsForFeedAnswer(ansId);
+
+                return PartialView("_FeedCommentList", SetFlagsForActions(model));
+            }
+            catch (Exception e)
+            {
+                while (e.InnerException != null) e = e.InnerException;
+                throw e;
+            }
+        }
+
+        [HttpPost]
         public async Task<ContentResult> UploadImage(HttpPostedFileBase upload)
         {
             var url = await HomeDa.UploadImageFile(CreateFileModelForUpload(upload));

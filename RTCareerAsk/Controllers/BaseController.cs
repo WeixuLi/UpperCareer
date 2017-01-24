@@ -249,6 +249,81 @@ namespace RTCareerAsk.Controllers
             return Session[sessionName] as T;
         }
 
+        protected QuestionModel SetFlagsForActions(QuestionModel model)
+        {
+            if (HasUserInfo)
+            {
+                bool createdByUser = model.Creator.UserID == GetUserID();
+                IEnumerable<AnswerModel> answerByUser = model.Answers.Where(x => x.Creator.UserID == GetUserID());
+
+                model.IsEditAllowed = createdByUser;
+                model.IsAnswerAllowed = !createdByUser && answerByUser.Count() == 0;
+
+                if (answerByUser.Count() > 0)
+                {
+                    foreach (AnswerModel ans in answerByUser)
+                    {
+                        model.Answers.Where(x => x.ID == ans.ID).First().IsEditAllowed = true;
+                    }
+                }
+
+                foreach (AnswerModel ans in model.Answers)
+                {
+                    if (ans.Comments.Count > 0)
+                    {
+                        ans.Comments = SetFlagsForActions(ans.Comments);
+                    }
+                }
+            }
+
+            return model;
+        }
+
+        protected AnswerModel SetFlagsForActions(AnswerModel model)
+        {
+            if (!HasUserInfo)
+            {
+                return model;
+            }
+
+            model.IsEditAllowed = model.Creator.UserID == GetUserID();
+
+            if (model.Comments.Count > 0)
+            {
+                model.Comments = SetFlagsForActions(model.Comments);
+            }
+
+            return model;
+        }
+
+        protected List<AnswerModel> SetFlagsForActions(IEnumerable<AnswerModel> models)
+        {
+            if (HasUserInfo)
+            {
+                foreach (AnswerModel ans in models)
+                {
+                    ans.IsEditAllowed = ans.Creator.UserID == GetUserID();
+
+                    if (ans.Comments.Count > 0)
+                    {
+                        ans.Comments = SetFlagsForActions(ans.Comments);
+                    }
+                }
+            }
+
+            return models.ToList();
+        }
+
+        protected List<CommentModel> SetFlagsForActions(IEnumerable<CommentModel> models)
+        {
+            foreach (CommentModel cmt in models)
+            {
+                cmt.IsDeleteAllowed = cmt.Creator.UserID == GetUserID();
+            }
+
+            return models.ToList();
+        }
+
         protected List<SelectListItem> GetFieldList()
         {
             return new List<SelectListItem>()

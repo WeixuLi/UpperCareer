@@ -200,38 +200,6 @@ namespace RTCareerAsk.Controllers
             }
         }
 
-        [HttpGet]
-        [UpperJsonExceptionFilter]
-        public async Task<PartialViewResult> LoadMessageContent(string Id)
-        {
-            try
-            {
-                if (await UpperMessageService.MarkMessageAsOpened(GetUserID(), Id))
-                {
-                    MessageModel model = await MessageDa.GetMessageByID(Id);
-
-                    if (model.From != null)
-                    {
-                        ViewBag.IsFromSelf = GetUserID() == model.From.UserID;
-                        ViewBag.IsFromSystem = false;
-                    }
-                    else
-                    {
-                        ViewBag.IsFromSystem = true;
-                    }
-
-                    return PartialView("_MessageContent", await MessageDa.GetMessageByID(Id));
-                }
-
-                throw new InvalidOperationException("标记消息为已读失败");
-            }
-            catch (Exception e)
-            {
-                while (e.InnerException != null) e = e.InnerException;
-                throw e;
-            }
-        }
-
         [UpperResult]
         [HttpPost]
         [UpperJsonExceptionFilter]

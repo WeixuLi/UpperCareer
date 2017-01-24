@@ -76,7 +76,7 @@ namespace RTCareerAsk.DAL.Domain
                     FromUser = new User() { ObjectID = infoString };
                     break;
                 case 8:
-                    FromUser = new User() { ObjectID = infoString };
+                    FromUser = new User() { ObjectID = userId };
                     CompoundNameString = nameString;
                     CompoundInfoString = infoString;
                     break;

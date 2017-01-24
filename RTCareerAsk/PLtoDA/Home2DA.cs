@@ -54,9 +54,7 @@ namespace RTCareerAsk.PLtoDA
         {
             if (userSearchResults.Count() > 0)
             {
-                List<Task<UserTag>> tasks = new List<Task<UserTag>>();
-
-                tasks.AddRange(userSearchResults.Select(x => LCDal.BuildUserTag(userId, x)));
+                List<Task<UserTag>> tasks = userSearchResults.Select(x => LCDal.BuildUserTag(userId, x)).ToList();
 
                 await Task.WhenAll(tasks.ToArray());
 
@@ -85,17 +83,22 @@ namespace RTCareerAsk.PLtoDA
             {
                 case 1:
                 case 8:
-                    result.Content = await LCDal.LoadQuestionForFeed(hsty.ReadInfoStringByIndex(0)).ContinueWith(t => t.Result != null ? new QuestionInfoModel(t.Result) : null);
+                    result.Content = await LCDal.LoadQuestionForFeed(hsty.ReadInfoStringByIndex(0)).ContinueWith(t => new QuestionInfoModel(t.Result));
                     break;
                 case 2:
                 case 5:
-                    result.Content = await LCDal.LoadAnswerForFeed(hsty.ReadInfoStringByIndex(0)).ContinueWith(t => t.Result != null ? new AnswerInfoModel(t.Result) : null);
+                    result.Content = await LCDal.LoadAnswerForFeed(hsty.ReadInfoStringByIndex(0)).ContinueWith(t => new AnswerInfoModel(t.Result));
                     break;
                 default:
                     throw new ArgumentOutOfRangeException("输入数据非动态类型，输入类型：" + hsty.Type.ToString());
             }
 
-            return result.Content != null ? result : null;
+            return result;
+        }
+
+        public async Task<IEnumerable<CommentModel>> LoadCommentsForFeedAnswer(string answerId, int pageIndex = 0)
+        {
+            return await LCDal.LoadCommentsForAnswerFeeds(answerId, pageIndex).ContinueWith(t => t.Result.Select(x => new CommentModel(x)));
         }
 
         #region Trunk

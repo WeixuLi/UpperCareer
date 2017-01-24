@@ -21,4 +21,27 @@ $(document).ready(function () {
     $('.feed-list').upperscrollpaging('/Home/LoadFeedsByPage', {
         postAction: AfterAnswerFeedsLoad
     })
+
+    $(document).on('click', '.feed-comments', function (e) {
+        e.preventDefault();
+
+        var $this = $(this),
+            modal = $('#divModal'),
+            ansId = $this.data('id')
+
+        $.ajax('/Home/LoadFeedAnswerComments', {
+            type: "POST",
+            data: JSON.stringify({ ansId: ansId }),
+            contentType: 'application/json',
+            dataType: "html",
+            success: function (result) {
+                modal.children().html(result);
+                modal.modal('show');
+            },
+            error: function (xhr) {
+                var json = $.parseJSON(xhr.responseText);
+                DisplayErrorInfo(json.errorMessage);
+            }
+        });
+    });
 });

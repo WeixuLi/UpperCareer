@@ -145,7 +145,7 @@ a {
 
         .feed-list .feed-header > .title {
             display: block;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
         }
 
@@ -180,6 +180,56 @@ a {
                     background-color: #eef7e9;
                     color: #436f28;
                 }
+
+.feed-comment {
+}
+
+    .feed-comment > .input {
+        position: fixed;
+        padding: 5px 18px 5px;
+        width: 100%;
+        z-index: 10;
+        background-color: #efefef;
+        opacity: 0.7;
+    }
+
+        .feed-comment > .input > .placeholder {
+            position: absolute;
+            padding: 0 4px;
+            color: #dedede;
+        }
+
+        .feed-comment > .input > .text {
+            display: flex;
+            -ms-flex-flow: row;
+            -webkit-flex-flow: row;
+            flex-flow: row;
+            border: 1px groove #eeeeee;
+            -moz-border-radius: 5px;
+            -webkit-border-radius: 5px;
+            border-radius: 5px;
+            min-height: 1.2em;
+        }
+
+            .feed-comment > .input > .text > .textbox {
+                background-color: white;
+                flex-grow: 1;
+                padding: 0 3px;
+            }
+
+    .feed-comment > .list {
+        padding: 0 3px 3px;
+        background-color: white;
+        overflow: scroll;
+        max-height: 90vh;
+        position: relative;
+    }
+
+        .feed-comment > .list li > .header {
+        }
+
+        .feed-comment > .list li > .body {
+        }
 
 .content-info {
     background-color: #ffffff;
