@@ -212,7 +212,7 @@ namespace RTCareerAsk.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    throw new InvalidOperationException("用户输入的信息不符合要求");
+                    throw new ArgumentException("用户输入的信息不符合要求");
                 }
 
                 c.UserID = GetUserID();

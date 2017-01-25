@@ -8,5 +8,5 @@
 </div>
 <div class="action">
     <span>推荐 @(Model.VoteDiff)</span>
-    <span><a href="#" class="feed-comments" data-id="@Model.ID">评论（@(Model.SubPostCount)）</a></span>
+    <span><a href="#" class="feed-comments" data-id="@Model.ID">评论（<span id="@string.Format("spnCmtCnt{0}", Model.ID)">@(Model.SubPostCount)</span>）</a></span>
 </div>

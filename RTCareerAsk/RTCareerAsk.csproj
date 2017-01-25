@@ -822,6 +822,7 @@
     <Content Include="Views\Home\Feeds.cshtml" />
     <Content Include="Views\Home\_FeedsPartial.cshtml" />
     <Content Include="Views\Shared\_FeedCommentList.cshtml" />
+    <Content Include="Views\Shared\_FeedCommentDetail.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

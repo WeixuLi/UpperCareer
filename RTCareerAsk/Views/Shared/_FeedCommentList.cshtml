@@ -1,4 +1,9 @@
-﻿@model IEnumerable<RTCareerAsk.Models.CommentModel>
+﻿@model RTCareerAsk.Models.AnswerModel
+
+@{
+    bool IsAuthorized = ViewBag.IsAuthorized != null ? Convert.ToBoolean(ViewBag.IsAuthorized) : false;
+}
+
 <div class="feed-comment">
     <div class="input">
         <div class="placeholder">
@@ -6,24 +11,38 @@
         </div>
         <div class="text">
             <div contenteditable="true" class="textbox"></div>
-            <div><a href="#" class="btn btn-success btn-xs">提交评论</a></div>
+            <div>
+                <a href="#" class="btn btn-success btn-xs @Html.AssignClassWithCondition(!IsAuthorized, "redirect-login")"
+                    data-answerid="@Model.ID"
+                    data-authorid="@Model.Creator.UserID"
+                    data-questiontitle="@Model.ForQuestion.Title"
+                    data-notifyuserid="">提交评论
+                </a>
+            </div>
+        </div>
+        <div id="divInfoFeedComment" class="alert-tag" style="display: none">
+            <div class="alert alert-dismissible alert-warning">
+                <button type="button" class="close">&times;</button>
+                <p></p>
+            </div>
         </div>
     </div>
 
     <div class="list">
-        <ul class="list-group" style="margin-top: 50px">
-            @foreach (RTCareerAsk.Models.CommentModel cmt in Model)
-            {
-                <li class="list-group-item">
-                    <div class="header">
-                        @Html.UpperNameTag(cmt.Creator)
-                    </div>
-                    <div></div>
-                    <div class="body">
-                        <p>@Html.Raw(HttpUtility.HtmlDecode(cmt.Content))</p>
-                    </div>
-                </li>
-            }
-        </ul>
+        @if (Model.Comments.Count > 0)
+        {
+            <ul class="list-group" style="margin-top: 50px">
+                @foreach (RTCareerAsk.Models.CommentModel cmt in Model.Comments)
+                {
+                    @Html.Partial("_FeedCommentDetail", cmt)
+                }
+            </ul>
+        }
+        else
+        {
+            <div>
+                <img src="/Images/blank.jpg" alt="" style="width: 66%; height: auto; margin: 0 auto" />
+            </div>
+        }
     </div>
 </div>

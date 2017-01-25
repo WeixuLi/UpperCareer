@@ -1,0 +1,11 @@
+﻿@model RTCareerAsk.Models.CommentModel
+
+<li class="list-group-item">
+    <div class="header">
+        @Html.UpperNameTag(Model.Creator)
+    </div>
+    <div></div>
+    <div class="body">
+        <p>@Html.Raw(HttpUtility.HtmlDecode(Model.Content))</p>
+    </div>
+</li>

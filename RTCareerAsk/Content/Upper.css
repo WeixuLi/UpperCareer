@@ -195,7 +195,8 @@ a {
 
         .feed-comment > .input > .placeholder {
             position: absolute;
-            padding: 0 4px;
+            margin-left: 40%;
+            text-align: center;
             color: #dedede;
         }
 
@@ -220,7 +221,7 @@ a {
     .feed-comment > .list {
         padding: 0 3px 3px;
         background-color: white;
-        overflow: scroll;
+        overflow-y: scroll;
         max-height: 90vh;
         position: relative;
     }

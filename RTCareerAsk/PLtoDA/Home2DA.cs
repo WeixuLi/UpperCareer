@@ -96,9 +96,14 @@ namespace RTCareerAsk.PLtoDA
             return result;
         }
 
-        public async Task<IEnumerable<CommentModel>> LoadCommentsForFeedAnswer(string answerId, int pageIndex = 0)
+        public async Task<AnswerModel> LoadCommentsForFeedAnswer(string userId, string answerId, int pageIndex = 0)
         {
-            return await LCDal.LoadCommentsForAnswerFeeds(answerId, pageIndex).ContinueWith(t => t.Result.Select(x => new CommentModel(x)));
+            return await LCDal.GetAnswerWithComments(userId, answerId).ContinueWith(t => new AnswerModel(t.Result));
+        }
+
+        public async Task<CommentModel> SaveCommentForFeedAnswer(CommentPostModel model)
+        {
+            return await LCDal.SaveNewFeedComment(model.CreatePostForSave()).ContinueWith(t => new CommentModel(t.Result));
         }
 
         #region Trunk

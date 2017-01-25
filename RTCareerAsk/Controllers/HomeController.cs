@@ -124,11 +124,35 @@ namespace RTCareerAsk.Controllers
         {
             try
             {
-                ViewBag.AnswerID = ansId;
-
-                IEnumerable<CommentModel> model = await HomeDa.LoadCommentsForFeedAnswer(ansId);
+                AnswerModel model = await HomeDa.LoadCommentsForFeedAnswer(HasUserInfo ? GetUserID() : string.Empty, ansId);
 
                 return PartialView("_FeedCommentList", SetFlagsForActions(model));
+            }
+            catch (Exception e)
+            {
+                while (e.InnerException != null) e = e.InnerException;
+                throw e;
+            }
+        }
+
+        [HttpPost]
+        [UpperResult]
+        [UpperJsonExceptionFilter]
+        public async Task<PartialViewResult> SaveFeedComment(CommentPostModel model)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    throw new ArgumentException("评论不能超过500个字符");
+                }
+
+                model.UserID = GetUserID();
+                model.UserName = GetUserName();
+
+                CommentModel result = await HomeDa.SaveCommentForFeedAnswer(model);
+
+                return PartialView("_FeedCommentDetail", result);
             }
             catch (Exception e)
             {

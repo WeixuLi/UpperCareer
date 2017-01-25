@@ -1755,28 +1755,6 @@ namespace RTCareerAsk.DAL
                     return new AnswerInfo(t.Result);
                 });
         }
-
-        public async Task<IEnumerable<Comment>> LoadCommentsForAnswerFeeds(string answerId, int pageIndex)
-        {
-            int pageCapacity = 20;
-
-            return await AVObject.GetQuery("Comment")
-                .WhereEqualTo("forAnswer", AVObject.CreateWithoutData("Answer", answerId))
-                .Include("createdBy")
-                //.Skip(pageIndex * pageCapacity)
-                //.Limit(pageCapacity)
-                .OrderByDescending("createdAt")
-                .FindAsync()
-                .ContinueWith(t =>
-                    {
-                        if (t.IsFaulted || t.IsCanceled)
-                        {
-                            throw t.Exception;
-                        }
-
-                        return t.Result.Select(x => new Comment(x));
-                    });
-        }
         #endregion
 
         #region Post Save Operation
@@ -2209,6 +2187,83 @@ namespace RTCareerAsk.DAL
                             }
                         });
                 }).Unwrap().Unwrap();
+        }
+
+        public async Task<Comment> SaveNewFeedComment(Comment cmt)
+        {
+            AVObject c = cmt.CreateCommentObjectForSave();
+
+            await c.SaveAsync().ContinueWith(t =>
+            {
+                if (t.IsFaulted || t.IsCanceled)
+                {
+                    throw t.Exception;
+                }
+            });
+
+            Task tUpdateAns = c.Get<AVObject>("forAnswer").FetchAsync().ContinueWith(s =>
+                {
+                    if (s.IsFaulted || s.IsCanceled)
+                    {
+                        throw s.Exception;
+                    }
+
+                    CreateNotification(cmt.Notification);
+
+                    UpdateSubpostCount(s.Result, true).ContinueWith(x =>
+                    {
+                        if (x.IsFaulted || s.IsCanceled)
+                        {
+                            throw x.Exception;
+                        }
+                    });
+                });
+
+            Task<Comment> tResult = AVObject.GetQuery("Comment")
+                .Include("createdBy")
+                .GetAsync(c.ObjectId)
+                .ContinueWith(t =>
+                    {
+                        if (t.IsFaulted || t.IsCanceled)
+                        {
+                            throw t.Exception;
+                        }
+
+                        return new Comment(t.Result);
+                    });
+
+            await Task.WhenAll(tUpdateAns, tResult);
+
+            return tResult.Result;
+
+            //return await c.SaveAsync().ContinueWith(t =>
+            //{
+            //    if (t.IsFaulted || t.IsCanceled)
+            //    {
+            //        throw t.Exception;
+            //    }
+
+            //    return c.Get<AVObject>("forAnswer").FetchAsync().ContinueWith(s =>
+            //    {
+            //        if (s.IsFaulted || s.IsCanceled)
+            //        {
+            //            throw s.Exception;
+            //        }
+
+            //        CreateNotification(cmt.Notification);
+
+            //        UpdateSubpostCount(s.Result, true).ContinueWith(x =>
+            //        {
+            //            if (x.IsFaulted || s.IsCanceled)
+            //            {
+            //                throw x.Exception;
+            //            }
+            //        });
+
+            //        return new Comment(c);
+            //    });
+            //})
+            //.Unwrap();
         }
         #endregion
 
